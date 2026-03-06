@@ -209,11 +209,24 @@ export default function Dashboard() {
           <div className="px-4 pt-12 pb-6">
             {/* Greeting */}
             <div className="flex items-center justify-between mb-6">
-              <div>
-                <p className="text-[#6b7280] text-sm">Welcome back</p>
-                <h1 className="text-xl font-bold text-white">
-                  {convexUser?.name?.split(" ")[0] ?? "—"}
-                </h1>
+              <div className="flex items-center gap-3">
+                {convexUser?.imageUrl ? (
+                  <img
+                    src={convexUser.imageUrl}
+                    alt={convexUser.name ?? "Profile"}
+                    className="w-10 h-10 rounded-full object-cover"
+                  />
+                ) : (
+                  <div className="w-10 h-10 rounded-full flex items-center justify-center bg-[#2a2a2a] text-white text-sm font-semibold">
+                    {convexUser?.name?.charAt(0) ?? "?"}
+                  </div>
+                )}
+                <div>
+                  <p className="text-[#6b7280] text-sm">Welcome back</p>
+                  <h1 className="text-xl font-bold text-white">
+                    {convexUser?.name?.split(" ")[0] ?? "—"}
+                  </h1>
+                </div>
               </div>
               <Link href="/pool/new">
                 <button className="w-10 h-10 rounded-full bg-gradient-to-r from-[#4ade80] to-[#22c55e] flex items-center justify-center active:scale-95 transition-transform">
