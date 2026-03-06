@@ -36,6 +36,7 @@ const BANK_PROVIDERS = ["BDO", "BPI", "Metrobank", "UnionBank", "Landbank", "PNB
 export default function ProfilePage() {
   const { convexUser, clerkUser } = useCurrentUser();
   const fileRef = useRef<HTMLInputElement>(null);
+  const formRef = useRef<HTMLDivElement>(null);
 
   const [showForm, setShowForm] = useState(false);
   const [form, setForm] = useState<AccountForm>(DEFAULT_FORM);
@@ -131,6 +132,9 @@ export default function ProfilePage() {
     setQrStorageId(acc.qrCodeStorageId ?? null);
     setEditingId(acc._id);
     setShowForm(true);
+    setTimeout(() => {
+      formRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    }, 50);
   }
 
   async function handleDelete(accountId: Id<"payment_accounts">) {
@@ -192,7 +196,7 @@ export default function ProfilePage() {
             <p className="text-xs text-[#6b7280] font-medium uppercase tracking-wider">
               Payment Accounts
             </p>
-            {!showForm && (
+            {!showForm ? (
               <button
                 onClick={() => setShowForm(true)}
                 className="flex items-center gap-1 text-xs text-[#4ade80]"
@@ -200,7 +204,12 @@ export default function ProfilePage() {
                 <Plus size={14} />
                 Add
               </button>
-            )}
+            ) : editingId ? (
+              <span className="flex items-center gap-1 text-xs text-[#4ade80]">
+                <Pencil size={12} />
+                Editing...
+              </span>
+            ) : null}
           </div>
 
           {/* Existing accounts */}
@@ -209,47 +218,60 @@ export default function ProfilePage() {
               {paymentAccounts.map((acc) => (
                 <div
                   key={acc._id}
-                  className="bg-[#141414] border border-[#2a2a2a] rounded-2xl p-4"
+                  className={`bg-[#141414] rounded-2xl p-4 border transition-all ${
+                    editingId === acc._id
+                      ? "border-[#4ade80]/60 border-l-4 border-l-[#4ade80]"
+                      : "border-[#2a2a2a]"
+                  } ${editingId && editingId !== acc._id ? "opacity-40" : "opacity-100"}`}
                 >
-                  <div className="flex items-center justify-between mb-2">
-                    <div className="flex items-center gap-2">
-                      {acc.type === "ewallet" ? (
-                        <Wallet size={14} className="text-[#4ade80]" />
-                      ) : (
-                        <Landmark size={14} className="text-[#4ade80]" />
+                  <div className="flex gap-3">
+                    {acc.qrCodeUrl && (
+                      <img
+                        src={acc.qrCodeUrl}
+                        alt={`${acc.provider} QR`}
+                        className="w-20 h-20 rounded-xl border border-[#2a2a2a] object-cover flex-shrink-0"
+                      />
+                    )}
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center justify-between mb-1">
+                        <div className="flex items-center gap-1.5 flex-wrap">
+                          {acc.type === "ewallet" ? (
+                            <Wallet size={12} className="text-[#4ade80]" />
+                          ) : (
+                            <Landmark size={12} className="text-[#4ade80]" />
+                          )}
+                          <span className="text-[10px] font-medium px-1.5 py-0.5 rounded-full bg-[#4ade80]/10 text-[#4ade80]">
+                            {acc.type === "ewallet" ? "E-Wallet" : "Bank"}
+                          </span>
+                          <span className="text-sm font-semibold text-white">{acc.provider}</span>
+                          {editingId === acc._id && (
+                            <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-[#4ade80]/15 text-[#4ade80] border border-[#4ade80]/30 uppercase tracking-wide">
+                              Editing
+                            </span>
+                          )}
+                        </div>
+                        <div className="flex items-center gap-1 flex-shrink-0">
+                          <button
+                            onClick={() => handleEdit(acc)}
+                            className="p-1.5 rounded-lg text-[#6b7280] hover:text-[#4ade80] transition-colors"
+                          >
+                            <Pencil size={14} />
+                          </button>
+                          <button
+                            disabled={deletingId === acc._id}
+                            onClick={() => handleDelete(acc._id)}
+                            className="p-1.5 rounded-lg text-[#6b7280] hover:text-red-400 transition-colors disabled:opacity-50"
+                          >
+                            <Trash2 size={14} />
+                          </button>
+                        </div>
+                      </div>
+                      <p className="text-sm text-white">{acc.accountName}</p>
+                      {acc.accountNumber && (
+                        <p className="text-sm text-[#6b7280] font-mono mt-0.5">{acc.accountNumber}</p>
                       )}
-                      <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-[#4ade80]/10 text-[#4ade80]">
-                        {acc.type === "ewallet" ? "E-Wallet" : "Bank"}
-                      </span>
-                      <span className="text-sm font-semibold text-white">{acc.provider}</span>
-                    </div>
-                    <div className="flex items-center gap-1">
-                      <button
-                        onClick={() => handleEdit(acc)}
-                        className="p-1.5 rounded-lg text-[#6b7280] hover:text-[#4ade80] transition-colors"
-                      >
-                        <Pencil size={14} />
-                      </button>
-                      <button
-                        disabled={deletingId === acc._id}
-                        onClick={() => handleDelete(acc._id)}
-                        className="p-1.5 rounded-lg text-[#6b7280] hover:text-red-400 transition-colors disabled:opacity-50"
-                      >
-                        <Trash2 size={14} />
-                      </button>
                     </div>
                   </div>
-                  <p className="text-sm text-white">{acc.accountName}</p>
-                  {acc.accountNumber && (
-                    <p className="text-sm text-[#6b7280] font-mono mt-0.5">{acc.accountNumber}</p>
-                  )}
-                  {acc.qrCodeUrl && (
-                    <img
-                      src={acc.qrCodeUrl}
-                      alt={`${acc.provider} QR`}
-                      className="mt-2 w-full max-w-[160px] rounded-xl border border-[#2a2a2a]"
-                    />
-                  )}
                 </div>
               ))}
             </div>
@@ -268,25 +290,48 @@ export default function ProfilePage() {
 
           {/* Add account form */}
           {showForm && (
-            <div className="bg-[#141414] border border-[#2a2a2a] rounded-2xl p-4 space-y-3">
-              <p className="text-sm font-semibold text-white">{editingId ? "Edit Payment Account" : "Add Payment Account"}</p>
+            <div
+              ref={formRef}
+              className={`bg-[#141414] rounded-2xl p-4 space-y-3 border ${
+                editingId ? "border-[#4ade80]/40 border-l-4 border-l-[#4ade80]" : "border-[#2a2a2a]"
+              }`}
+            >
+              <div className="flex items-center gap-2">
+                {editingId && <Pencil size={14} className="text-[#4ade80]" />}
+                <p className="text-sm font-semibold text-white">
+                  {editingId ? "Edit Payment Account" : "Add Payment Account"}
+                </p>
+              </div>
 
               {/* Type toggle */}
-              <div className="flex gap-2">
-                {(["ewallet", "bank"] as const).map((t) => (
-                  <button
-                    key={t}
-                    onClick={() => setForm((f) => ({ ...f, type: t, provider: "" }))}
-                    className={`flex-1 py-2.5 rounded-xl text-sm font-medium border transition-colors ${
-                      form.type === t
-                        ? "bg-[#4ade80]/10 border-[#4ade80] text-[#4ade80]"
-                        : "bg-[#0a0a0a] border-[#2a2a2a] text-white"
-                    }`}
-                  >
-                    {t === "ewallet" ? "E-Wallet" : "Bank"}
-                  </button>
-                ))}
-              </div>
+              {!editingId ? (
+                <div className="flex gap-2">
+                  {(["ewallet", "bank"] as const).map((t) => (
+                    <button
+                      key={t}
+                      onClick={() => setForm((f) => ({ ...f, type: t, provider: "" }))}
+                      className={`flex-1 py-2.5 rounded-xl text-sm font-medium border transition-colors ${
+                        form.type === t
+                          ? "bg-[#4ade80]/10 border-[#4ade80] text-[#4ade80]"
+                          : "bg-[#0a0a0a] border-[#2a2a2a] text-white"
+                      }`}
+                    >
+                      {t === "ewallet" ? "E-Wallet" : "Bank"}
+                    </button>
+                  ))}
+                </div>
+              ) : (
+                <div className="flex items-center gap-2 py-2">
+                  {form.type === "ewallet" ? (
+                    <Wallet size={14} className="text-[#4ade80]" />
+                  ) : (
+                    <Landmark size={14} className="text-[#4ade80]" />
+                  )}
+                  <span className="text-sm text-[#6b7280]">
+                    {form.type === "ewallet" ? "E-Wallet" : "Bank"}
+                  </span>
+                </div>
+              )}
 
               {/* Provider quick-select */}
               <div>
@@ -389,7 +434,7 @@ export default function ProfilePage() {
                   onClick={handleSaveAccount}
                   disabled={!form.provider.trim() || !form.accountName.trim() || saving}
                 >
-                  {saving ? "Saving..." : "Save"}
+                  {saving ? (editingId ? "Updating..." : "Adding...") : (editingId ? "Update Account" : "Add Account")}
                 </GreenButton>
               </div>
             </div>

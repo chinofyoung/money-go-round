@@ -2,7 +2,7 @@ type Status = "active" | "draft" | "completed" | "cancelled" | "pending" | "paid
 
 const config: Record<Status, { label: string; classes: string }> = {
   active:    { label: "Active",    classes: "bg-green-500/15 text-green-400" },
-  draft:     { label: "Draft",     classes: "bg-white/10 text-gray-400" },
+  draft:     { label: "Not Started", classes: "bg-white/10 text-gray-400" },
   completed: { label: "Completed", classes: "bg-blue-500/15 text-blue-400" },
   cancelled: { label: "Cancelled", classes: "bg-red-500/15 text-red-400" },
   pending:   { label: "Pending",   classes: "bg-yellow-500/15 text-yellow-400" },
