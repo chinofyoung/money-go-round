@@ -9,9 +9,9 @@ import { Id } from "@/convex/_generated/dataModel";
 import { use } from "react";
 import toast from "react-hot-toast";
 import Link from "next/link";
-import { Check, Home, Search } from "lucide-react";
-import { Avatar } from "@/components/ui/Avatar";
-import { useCurrentUser } from "@/hooks/useCurrentUser";
+import { Check, Home, Mail } from "lucide-react";
+
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export default function InvitePage({
   params,
@@ -19,15 +19,14 @@ export default function InvitePage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = use(params);
-  const [search, setSearch] = useState("");
-  const [loadingId, setLoadingId] = useState<string | null>(null);
+  const [email, setEmail] = useState("");
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
   const [invited, setInvited] = useState<string[]>([]);
 
-  const { convexUser } = useCurrentUser();
   const createInvitation = useMutation(api.invitations.create);
   const pool = useQuery(api.pools.getById, { poolId: id as Id<"pools"> });
   const members = useQuery(api.members.listByPool, { poolId: id as Id<"pools"> });
-  const allUsers = useQuery(api.users.listAll);
 
   const activeCount = members?.filter((m) => m.status === "active").length ?? 0;
   const invitedCount = members?.filter((m) => m.status === "invited").length ?? 0;
@@ -39,33 +38,43 @@ export default function InvitePage({
       .map((m) => m.email) ?? []
   );
 
-  // Filter users: exclude organizer and already-in-pool members
-  const availableUsers = (allUsers ?? []).filter((u) => {
-    if (u._id === convexUser?._id) return false; // exclude organizer
-    if (memberEmails.has(u.email)) return false; // already in pool
-    if (invited.includes(u.email)) return false; // just invited this session
-    if (!search.trim()) return true;
-    const q = search.toLowerCase();
-    return (
-      u.name.toLowerCase().includes(q) ||
-      u.email.toLowerCase().includes(q)
-    );
-  });
+  async function handleInvite() {
+    const trimmed = email.trim();
 
-  async function handleInvite(email: string, userId: string) {
-    setLoadingId(userId);
+    if (!EMAIL_REGEX.test(trimmed)) {
+      setError("Please enter a valid email address.");
+      return;
+    }
+
+    if (memberEmails.has(trimmed)) {
+      setError("This person is already in the pool.");
+      return;
+    }
+
+    if (invited.includes(trimmed)) {
+      setError("You already invited this email in this session.");
+      return;
+    }
+
+    setError("");
+    setLoading(true);
     try {
       await createInvitation({
         poolId: id as Id<"pools">,
-        email,
+        email: trimmed,
       });
-      setInvited((prev) => [email, ...prev]);
+      setEmail("");
+      setInvited((prev) => [trimmed, ...prev]);
       toast.success("Invite sent!");
     } catch (err: unknown) {
       toast.error(err instanceof Error ? err.message : "Failed to invite");
     } finally {
-      setLoadingId(null);
+      setLoading(false);
     }
+  }
+
+  function handleKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
+    if (e.key === "Enter") handleInvite();
   }
 
   return (
@@ -84,43 +93,36 @@ export default function InvitePage({
           </div>
         )}
 
-        {/* Search input */}
-        <div className="relative">
-          <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#6b7280]" />
-          <input
-            type="text"
-            className="w-full bg-[#141414] border border-[#2a2a2a] rounded-xl pl-9 pr-4 py-3 text-white text-sm outline-none focus:border-[#4ade80] placeholder:text-[#6b7280]"
-            placeholder="Search by name or email..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-          />
-        </div>
-
-        {/* User list */}
-        {availableUsers.length > 0 ? (
-          <div className="bg-[#141414] border border-[#2a2a2a] rounded-2xl divide-y divide-[#2a2a2a]">
-            {availableUsers.map((user) => (
-              <div key={user._id} className="flex items-center gap-3 px-4 py-3">
-                <Avatar src={user.imageUrl} name={user.name || user.email} size="sm" />
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-white truncate">{user.name}</p>
-                  <p className="text-xs text-[#6b7280] truncate">{user.email}</p>
-                </div>
-                <button
-                  onClick={() => handleInvite(user.email, user._id)}
-                  disabled={loadingId === user._id}
-                  className="shrink-0 px-3 py-1.5 rounded-full bg-[#4ade80] text-black text-xs font-semibold active:opacity-80 disabled:opacity-50 transition-opacity"
-                >
-                  {loadingId === user._id ? "..." : "Invite"}
-                </button>
-              </div>
-            ))}
+        {/* Email input + send button */}
+        <div>
+          <div className="flex gap-2">
+            <div className="relative flex-1">
+              <Mail size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#6b7280]" />
+              <input
+                type="email"
+                className="w-full bg-[#141414] border border-[#2a2a2a] rounded-xl pl-9 pr-4 py-3 text-white text-sm outline-none focus:border-[#4ade80] placeholder:text-[#6b7280]"
+                placeholder="Enter email address..."
+                value={email}
+                onChange={(e) => {
+                  setEmail(e.target.value);
+                  if (error) setError("");
+                }}
+                onKeyDown={handleKeyDown}
+                disabled={loading}
+              />
+            </div>
+            <button
+              onClick={handleInvite}
+              disabled={loading}
+              className="shrink-0 px-4 py-3 rounded-xl bg-[#4ade80] text-black text-sm font-semibold active:opacity-80 disabled:opacity-50 transition-opacity"
+            >
+              {loading ? "..." : "Send Invite"}
+            </button>
           </div>
-        ) : (
-          <p className="text-sm text-[#6b7280] text-center py-6">
-            {search.trim() ? "No users found" : "All users have been invited"}
-          </p>
-        )}
+          {error && (
+            <p className="mt-2 text-xs text-red-400">{error}</p>
+          )}
+        </div>
 
         {/* Recently invited */}
         {invited.length > 0 && (
