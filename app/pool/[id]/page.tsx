@@ -373,7 +373,6 @@ export default function PoolDetailPage({
                   key={member._id}
                   name={member.displayName ?? ""}
                   email={member.email}
-                  payoutPosition={member.payoutPosition}
                   status={member.status}
                   isRecipient={member._id === currentCycle?.recipientMemberId}
                 />
