@@ -102,9 +102,33 @@ export const listForUser = query({
         .map((id) => ctx.db.get(id))
     );
 
+    // For each pool, determine whether the organizer joined as a paying member
+    const organizedWithFlag = await Promise.all(
+      organized.map(async (pool) => {
+        const organizerMember = await ctx.db
+          .query("pool_members")
+          .withIndex("by_user", (q) => q.eq("userId", pool.organizerId))
+          .filter((q) => q.eq(q.field("poolId"), pool._id))
+          .first();
+        return { ...pool, organizerIsMember: organizerMember !== null };
+      })
+    );
+
+    const memberPoolsWithFlag = await Promise.all(
+      memberPools.filter(Boolean).map(async (pool) => {
+        if (!pool) return null;
+        const organizerMember = await ctx.db
+          .query("pool_members")
+          .withIndex("by_user", (q) => q.eq("userId", pool.organizerId))
+          .filter((q) => q.eq(q.field("poolId"), pool._id))
+          .first();
+        return { ...pool, organizerIsMember: organizerMember !== null };
+      })
+    );
+
     return {
-      organized,
-      member: memberPools.filter(Boolean),
+      organized: organizedWithFlag,
+      member: memberPoolsWithFlag.filter(Boolean),
     };
   },
 });
@@ -143,7 +167,9 @@ export const activate = mutation({
 
     sortedMembers.sort((a, b) => (a.payoutPosition ?? 0) - (b.payoutPosition ?? 0));
 
-    const totalAmount = pool.contributionAmount * sortedMembers.length;
+    const payingMembers = sortedMembers.filter(m => m.userId !== pool.organizerId);
+    const payingCount = payingMembers.length;
+    const totalAmount = pool.contributionAmount * payingCount;
 
     for (let i = 0; i < sortedMembers.length; i++) {
       const payoutDate = computePayoutDate(args.startDate, pool.payoutSchedule, i);
@@ -156,7 +182,7 @@ export const activate = mutation({
         status: i === 0 ? "current" : "upcoming",
       });
 
-      for (const member of sortedMembers) {
+      for (const member of payingMembers) {
         await ctx.db.insert("member_payments", {
           cycleId,
           memberId: member._id,

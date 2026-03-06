@@ -92,6 +92,8 @@ export default function PoolDetailPage({
 
   const startTs = new Date(startDateInput).getTime();
   const memberCount = pool.status === "draft" ? activeMembers.length : pool.maxMembers;
+  const organizerIsMember = activeMembers.some(m => m.userId === pool.organizerId);
+  const payingCount = memberCount - (organizerIsMember ? 1 : 0);
   const endDate = computeEndDate(startTs, pool.payoutSchedule, memberCount);
 
   async function handleStart() {
@@ -199,7 +201,7 @@ export default function PoolDetailPage({
             <StatCard
               label="Total pot"
               value={formatCurrency(
-                pool.contributionAmount * memberCount,
+                pool.contributionAmount * payingCount,
                 pool.currency
               )}
             />

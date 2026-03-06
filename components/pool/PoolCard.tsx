@@ -13,6 +13,7 @@ interface PoolCardProps {
   maxMembers: number;
   payoutSchedule: string;
   isOrganizer?: boolean;
+  organizerIsMember?: boolean;
 }
 
 const scheduleLabel: Record<string, string> = {
@@ -32,6 +33,7 @@ export function PoolCard({
   maxMembers,
   payoutSchedule,
   isOrganizer,
+  organizerIsMember = false,
 }: PoolCardProps) {
   const progress = maxMembers > 0 ? (currentCycle / maxMembers) * 100 : 0;
 
@@ -70,7 +72,7 @@ export function PoolCard({
               Cycle {currentCycle} of {maxMembers}
             </span>
             <span className="text-xs text-[#6b7280]">
-              {formatCurrency(contributionAmount * maxMembers, currency)} total
+              {formatCurrency(contributionAmount * (maxMembers - (organizerIsMember ? 1 : 0)), currency)} total
             </span>
           </div>
         </>

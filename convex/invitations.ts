@@ -79,17 +79,22 @@ export const getByToken = query({
 
     const pool = await ctx.db.get(invitation.poolId);
     const organizer = pool ? await ctx.db.get(pool.organizerId) : null;
-    const memberCount = await ctx.db
+    const activeMembers = await ctx.db
       .query("pool_members")
       .withIndex("by_pool", (q) => q.eq("poolId", invitation.poolId))
       .filter((q) => q.eq(q.field("status"), "active"))
       .collect();
 
+    // Exclude the organizer from the paying member count since they don't contribute
+    const payingMemberCount = pool
+      ? activeMembers.filter(m => m.userId !== pool.organizerId).length
+      : activeMembers.length;
+
     return {
       invitation,
       pool,
       organizer,
-      activeMemberCount: memberCount.length,
+      activeMemberCount: payingMemberCount,
     };
   },
 });

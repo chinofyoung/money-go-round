@@ -55,7 +55,6 @@ function SortableMemberRow({
         <MemberRow
           name={member.displayName ?? ""}
           email={member.email}
-          payoutPosition={member.payoutPosition}
           status={member.status}
         />
       </div>
@@ -90,7 +89,9 @@ export default function MembersPage({
   }
 
   const displayed = localOrder ?? members ?? [];
-  const activeMembers = displayed.filter((m) => m.status === "active");
+  const activeMembers = displayed
+    .filter((m) => m.status === "active")
+    .sort((a, b) => (a.payoutPosition ?? 0) - (b.payoutPosition ?? 0));
   const invitedMembers = displayed.filter((m) => m.status === "invited");
 
   const sensors = useSensors(
@@ -165,7 +166,6 @@ export default function MembersPage({
                     key={m._id}
                     name={m.displayName ?? ""}
                     email={m.email}
-                    payoutPosition={m.payoutPosition}
                     status={m.status}
                   />
                 ))

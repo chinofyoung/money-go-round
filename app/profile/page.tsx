@@ -199,7 +199,7 @@ export default function ProfilePage() {
             {!showForm ? (
               <button
                 onClick={() => setShowForm(true)}
-                className="flex items-center gap-1 text-xs text-[#4ade80]"
+                className="flex items-center gap-1 text-xs font-medium text-[#4ade80] bg-[#4ade80]/10 px-2.5 py-1 rounded-full"
               >
                 <Plus size={14} />
                 Add
@@ -278,14 +278,22 @@ export default function ProfilePage() {
           )}
 
           {paymentAccounts && paymentAccounts.length === 0 && !showForm && (
-            <div className="bg-[#141414] border border-[#2a2a2a] rounded-2xl p-4 text-center">
-              <p className="text-sm text-[#6b7280] mb-2">
-                No payment accounts yet.
-              </p>
-              <p className="text-xs text-[#6b7280]">
-                Add your GCash, Maya, or bank account so members know where to send payments.
-              </p>
-            </div>
+            <button
+              onClick={() => setShowForm(true)}
+              className="w-full bg-[#141414] border-2 border-dashed border-[#4ade80]/30 rounded-2xl p-8 flex flex-col items-center gap-4 active:bg-[#4ade80]/5 transition-colors"
+            >
+              <div className="w-16 h-16 rounded-full bg-[#4ade80]/10 flex items-center justify-center">
+                <Plus size={32} className="text-[#4ade80]" />
+              </div>
+              <div className="text-center">
+                <p className="text-base font-semibold text-white mb-1">
+                  Add Payment Account
+                </p>
+                <p className="text-sm text-[#6b7280]">
+                  Add your GCash, Maya, or bank account so members know where to send payments.
+                </p>
+              </div>
+            </button>
           )}
 
           {/* Add account form */}
@@ -310,7 +318,7 @@ export default function ProfilePage() {
                     <button
                       key={t}
                       onClick={() => setForm((f) => ({ ...f, type: t, provider: "" }))}
-                      className={`flex-1 py-2.5 rounded-xl text-sm font-medium border transition-colors ${
+                      className={`flex-1 py-2.5 rounded-full text-sm font-medium border transition-colors ${
                         form.type === t
                           ? "bg-[#4ade80]/10 border-[#4ade80] text-[#4ade80]"
                           : "bg-[#0a0a0a] border-[#2a2a2a] text-white"
@@ -341,7 +349,7 @@ export default function ProfilePage() {
                     <button
                       key={p}
                       onClick={() => setForm((f) => ({ ...f, provider: p }))}
-                      className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-colors ${
+                      className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-colors ${
                         form.provider === p
                           ? "bg-[#4ade80]/10 border-[#4ade80] text-[#4ade80]"
                           : "bg-[#0a0a0a] border-[#2a2a2a] text-white"
@@ -409,7 +417,7 @@ export default function ProfilePage() {
                   <button
                     disabled={uploading}
                     onClick={() => fileRef.current?.click()}
-                    className="w-full flex items-center justify-center gap-2 bg-[#0a0a0a] border border-[#2a2a2a] rounded-xl px-4 py-2.5 text-sm text-[#6b7280]"
+                    className="w-full flex items-center justify-center gap-2 bg-[#0a0a0a] border border-[#4ade80]/30 rounded-xl px-4 py-2.5 text-sm text-[#4ade80]/70"
                   >
                     <QrCode size={16} />
                     {uploading ? "Uploading..." : "Upload QR Code"}
@@ -426,11 +434,12 @@ export default function ProfilePage() {
                     setQrStorageId(null);
                     setEditingId(null);
                   }}
-                  className="flex-1 h-10 rounded-xl border border-[#2a2a2a] text-white text-sm font-medium"
+                  className="flex-1 h-12 rounded-full border border-[#2a2a2a] text-white text-sm font-medium active:bg-[#2a2a2a] transition-colors"
                 >
                   Cancel
                 </button>
                 <GreenButton
+                  className="flex-1"
                   onClick={handleSaveAccount}
                   disabled={!form.provider.trim() || !form.accountName.trim() || saving}
                 >

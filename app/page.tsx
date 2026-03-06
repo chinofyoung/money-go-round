@@ -329,6 +329,7 @@ export default function Dashboard() {
                       maxMembers={r.maxMembers}
                       payoutSchedule={r.payoutSchedule}
                       isOrganizer
+                      organizerIsMember={r.organizerIsMember}
                     />
                   ) : null
                 )}
@@ -344,6 +345,7 @@ export default function Dashboard() {
                       currentCycle={r.currentCycle}
                       maxMembers={r.maxMembers}
                       payoutSchedule={r.payoutSchedule}
+                      organizerIsMember={r.organizerIsMember}
                     />
                   ) : null
                 )}
