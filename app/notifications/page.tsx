@@ -5,7 +5,6 @@ import { api } from "@/convex/_generated/api";
 import { useCurrentUser } from "@/hooks/useCurrentUser";
 import { MobileContainer } from "@/components/layout/MobileContainer";
 import { PageHeader } from "@/components/layout/PageHeader";
-import { BottomNav } from "@/components/layout/BottomNav";
 import { formatRelativeTime } from "@/lib/format";
 import { Bell } from "lucide-react";
 import { NotificationsSkeleton } from "@/components/ui/Skeleton";
@@ -24,6 +23,7 @@ const ICON_MAP: Record<string, string> = {
   order_assigned: "🎯",
   pool_started: "🚀",
   invite_received: "📩",
+  announcement_posted: "📢",
 };
 
 export default function NotificationsPage() {
@@ -35,12 +35,9 @@ export default function NotificationsPage() {
     api.notifications.listForUser,
     convexUser ? { userId: convexUser._id } : "skip"
   );
-  const unreadCount = useQuery(
-    api.notifications.getUnreadCount,
-    convexUser ? { userId: convexUser._id } : "skip"
-  );
   const markRead = useMutation(api.notifications.markRead);
   const markAllRead = useMutation(api.notifications.markAllRead);
+  const clearRead = useMutation(api.notifications.clearRead);
   const acceptInvitation = useMutation(api.invitations.accept);
   const declineInvitation = useMutation(api.invitations.decline);
 
@@ -81,9 +78,9 @@ export default function NotificationsPage() {
         title="Notifications"
         showBack={false}
         action={
-          unreadCount && unreadCount > 0 ? (
+          notifications && notifications.length > 0 ? (
             <button
-              onClick={() => convexUser && markAllRead({ userId: convexUser._id })}
+              onClick={() => convexUser && clearRead({ userId: convexUser._id })}
               className="text-xs text-[#4ade80] shrink-0"
             >
               Clear all
@@ -104,7 +101,9 @@ export default function NotificationsPage() {
           notifications.map((n) => {
             const isInvite = n.type === "invite_received" && n.invitationToken && !n.read;
             const isPaymentReview = n.type === "payment_submitted" && n.paymentId && n.poolId;
+            const isAnnouncement = n.type === "announcement_posted" && n.poolId;
             const isActioning = actioningId === n._id;
+            const isClickable = isPaymentReview || isAnnouncement || (!isInvite && !n.read);
 
             return (
               <div
@@ -115,12 +114,17 @@ export default function NotificationsPage() {
                     router.push(`/pool/${n.poolId}/payments/${n.paymentId}`);
                     return;
                   }
+                  if (isAnnouncement) {
+                    markRead({ notificationId: n._id });
+                    router.push(`/pool/${n.poolId}/announce`);
+                    return;
+                  }
                   if (!isInvite && !n.read) markRead({ notificationId: n._id });
                 }}
                 className={`flex gap-3 p-4 rounded-2xl border transition-colors ${n.read
                     ? "bg-[#141414] border-[#2a2a2a]"
                     : "bg-[#1c1c1c] border-[#4ade80]/20"
-                  } ${isPaymentReview || (!isInvite && !n.read) ? "cursor-pointer" : ""}`}
+                  } ${isClickable ? "cursor-pointer" : ""}`}
               >
                 <span className="text-xl shrink-0 mt-0.5">
                   {ICON_MAP[n.type] ?? "🔔"}
@@ -176,7 +180,6 @@ export default function NotificationsPage() {
         )}
       </div>
 
-      <BottomNav unreadCount={unreadCount ?? 0} />
     </MobileContainer>
   );
 }

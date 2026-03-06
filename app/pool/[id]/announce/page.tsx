@@ -5,7 +5,6 @@ import { api } from "@/convex/_generated/api";
 import { useCurrentUser } from "@/hooks/useCurrentUser";
 import { MobileContainer } from "@/components/layout/MobileContainer";
 import { PageHeader } from "@/components/layout/PageHeader";
-import { Avatar } from "@/components/ui/Avatar";
 import { GreenButton } from "@/components/ui/GreenButton";
 import { Id } from "@/convex/_generated/dataModel";
 import { use, useState } from "react";
@@ -87,7 +86,9 @@ export default function AnnouncementsPage({
             className="bg-[#141414] border border-[#2a2a2a] rounded-2xl p-4"
           >
             <div className="flex items-center gap-2 mb-2">
-              <Avatar name={pool?.name ?? "O"} size="sm" />
+              <div className="w-7 h-7 rounded-full bg-[#4ade80]/10 flex items-center justify-center shrink-0">
+                <span className="text-xs">📢</span>
+              </div>
               <div>
                 <p className="text-xs font-semibold text-white">Organizer</p>
                 <p className="text-[10px] text-[#6b7280]">

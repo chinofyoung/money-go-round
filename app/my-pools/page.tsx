@@ -5,7 +5,6 @@ import { api } from "@/convex/_generated/api";
 import { useCurrentUser } from "@/hooks/useCurrentUser";
 import { MobileContainer } from "@/components/layout/MobileContainer";
 import { PageHeader } from "@/components/layout/PageHeader";
-import { BottomNav } from "@/components/layout/BottomNav";
 import { PoolCard } from "@/components/pool/PoolCard";
 import { GreenButton } from "@/components/ui/GreenButton";
 import Link from "next/link";
@@ -27,8 +26,7 @@ export default function MyPoolsPage() {
       <MobileContainer>
         <PageHeader title="My Pools" showBack={false} />
         <MyPoolsSkeleton />
-        <BottomNav />
-      </MobileContainer>
+        </MobileContainer>
     );
   }
 
@@ -100,7 +98,6 @@ export default function MyPoolsPage() {
         )}
       </div>
 
-      <BottomNav />
     </MobileContainer>
   );
 }

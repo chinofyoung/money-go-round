@@ -62,16 +62,19 @@ export function PoolCard({
         <span className="text-xs text-[#6b7280]">/ cycle</span>
       </div>
 
-      <ProgressBar value={progress} />
-
-      <div className="flex justify-between mt-2">
-        <span className="text-xs text-[#6b7280]">
-          Cycle {currentCycle} of {maxMembers}
-        </span>
-        <span className="text-xs text-[#6b7280]">
-          {formatCurrency(contributionAmount * maxMembers, currency)} total
-        </span>
-      </div>
+      {maxMembers > 0 && (
+        <>
+          <ProgressBar value={progress} />
+          <div className="flex justify-between mt-2">
+            <span className="text-xs text-[#6b7280]">
+              Cycle {currentCycle} of {maxMembers}
+            </span>
+            <span className="text-xs text-[#6b7280]">
+              {formatCurrency(contributionAmount * maxMembers, currency)} total
+            </span>
+          </div>
+        </>
+      )}
     </Link>
   );
 }

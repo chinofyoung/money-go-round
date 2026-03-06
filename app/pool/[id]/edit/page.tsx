@@ -36,7 +36,6 @@ export default function EditPoolPage({
     currency: "PHP",
     payoutSchedule: "end_of_month" as "weekly" | "biweekly" | "mid_month" | "end_of_month",
     paymentVerifier: "organizer" as "organizer" | "recipient",
-    maxMembers: "",
     startDate: "",
   });
   const [loading, setLoading] = useState(false);
@@ -51,7 +50,6 @@ export default function EditPoolPage({
       currency: pool.currency,
       payoutSchedule: pool.payoutSchedule,
       paymentVerifier: pool.paymentVerifier ?? "organizer",
-      maxMembers: String(pool.maxMembers),
       startDate: pool.startDate
         ? new Date(pool.startDate).toISOString().split("T")[0]
         : "",
@@ -74,7 +72,6 @@ export default function EditPoolPage({
         currency: form.currency.trim().toUpperCase(),
         payoutSchedule: form.payoutSchedule,
         paymentVerifier: form.paymentVerifier,
-        maxMembers: Number(form.maxMembers),
         startDate: form.startDate ? new Date(form.startDate).getTime() : undefined,
       });
       toast.success("Pool updated!");
@@ -189,19 +186,6 @@ export default function EditPoolPage({
             ))}
           </div>
         </div>
-
-        {isDraft && (
-          <div>
-            <label className="text-xs text-[#6b7280] mb-1.5 block">Number of members</label>
-            <input
-              type="number"
-              min={2}
-              className="w-full bg-[#141414] border border-[#2a2a2a] rounded-xl px-4 py-3 text-white text-sm outline-none focus:border-[#4ade80]"
-              value={form.maxMembers}
-              onChange={(e) => set("maxMembers", e.target.value)}
-            />
-          </div>
-        )}
 
         <div>
           <label className="text-xs text-[#6b7280] mb-1.5 block">Start date</label>

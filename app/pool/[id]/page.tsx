@@ -91,7 +91,8 @@ export default function PoolDetailPage({
   const myPayment = cyclePayments?.find((p) => p.memberId === myMember?._id);
 
   const startTs = new Date(startDateInput).getTime();
-  const endDate = computeEndDate(startTs, pool.payoutSchedule, pool.maxMembers);
+  const memberCount = pool.status === "draft" ? activeMembers.length : pool.maxMembers;
+  const endDate = computeEndDate(startTs, pool.payoutSchedule, memberCount);
 
   async function handleStart() {
     setStarting(true);
@@ -121,7 +122,7 @@ export default function PoolDetailPage({
 
   const quickLinks = [
     { href: `members`, label: "Members", icon: Users, count: activeMembers.length },
-    { href: `schedule`, label: "Schedule", icon: Calendar, count: pool.maxMembers },
+    { href: `schedule`, label: "Schedule", icon: Calendar, count: memberCount },
     { href: `announce`, label: "Announcements", icon: MessageSquare },
   ];
 
@@ -198,7 +199,7 @@ export default function PoolDetailPage({
             <StatCard
               label="Total pot"
               value={formatCurrency(
-                pool.contributionAmount * pool.maxMembers,
+                pool.contributionAmount * memberCount,
                 pool.currency
               )}
             />
@@ -219,7 +220,7 @@ export default function PoolDetailPage({
               <span className="text-white">{formatDate(pool.startDate)}</span>
               <span className="text-[#6b7280]">Ends</span>
               <span className="text-white">
-                {formatDate(computeEndDate(pool.startDate, pool.payoutSchedule, pool.maxMembers))}
+                {formatDate(computeEndDate(pool.startDate, pool.payoutSchedule, memberCount))}
               </span>
             </div>
           )}
@@ -231,7 +232,7 @@ export default function PoolDetailPage({
             <Link href={`/pool/${id}/payments`} className="block">
               <CycleCard
                 cycleNumber={currentCycle.cycleNumber}
-                totalCycles={pool.maxMembers}
+                totalCycles={memberCount}
                 recipientName={recipient.displayName ?? ""}
                 recipientEmail={recipient.email}
                 payoutDate={currentCycle.payoutDate}
@@ -287,7 +288,7 @@ export default function PoolDetailPage({
           <div className="bg-[#141414] border border-[#2a2a2a] rounded-2xl p-4 space-y-4">
             <div className="flex items-center justify-between">
               <span className="text-sm text-[#6b7280]">
-                {activeMembers.length} of {pool.maxMembers} members joined
+                {activeMembers.length} members joined
               </span>
               <Link href={`/pool/${id}/invite`} className="text-xs text-[#4ade80]">
                 + Invite
@@ -330,7 +331,7 @@ export default function PoolDetailPage({
         {pool.status === "draft" && !isOrganizer && (
           <div className="bg-[#141414] border border-[#2a2a2a] rounded-2xl p-4 text-center">
             <p className="text-sm text-[#6b7280]">
-              {activeMembers.length} of {pool.maxMembers} members joined
+              {activeMembers.length} members joined
             </p>
           </div>
         )}

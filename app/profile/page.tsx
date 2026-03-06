@@ -3,7 +3,6 @@
 import { useCurrentUser } from "@/hooks/useCurrentUser";
 import { MobileContainer } from "@/components/layout/MobileContainer";
 import { PageHeader } from "@/components/layout/PageHeader";
-import { BottomNav } from "@/components/layout/BottomNav";
 import { Avatar } from "@/components/ui/Avatar";
 import { GreenButton } from "@/components/ui/GreenButton";
 import { SignOutButton } from "@clerk/nextjs";
@@ -11,7 +10,7 @@ import { useQuery, useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
 import { ProfileSkeleton } from "@/components/ui/Skeleton";
-import { Plus, Trash2, QrCode, Landmark, Wallet } from "lucide-react";
+import { Plus, Trash2, QrCode, Landmark, Wallet, Pencil } from "lucide-react";
 import { useRef, useState } from "react";
 import toast from "react-hot-toast";
 
@@ -56,8 +55,10 @@ export default function ProfilePage() {
   );
 
   const addAccount = useMutation(api.paymentAccounts.add);
+  const updateAccount = useMutation(api.paymentAccounts.update);
   const removeAccount = useMutation(api.paymentAccounts.remove);
   const generateUploadUrl = useMutation(api.paymentAccounts.generateUploadUrl);
+  const [editingId, setEditingId] = useState<Id<"payment_accounts"> | null>(null);
 
   const organized = poolData?.organized ?? [];
   const member = (poolData?.member ?? []).filter(Boolean);
@@ -89,23 +90,47 @@ export default function ProfilePage() {
     if (!convexUser || !form.provider.trim() || !form.accountName.trim()) return;
     setSaving(true);
     try {
-      await addAccount({
-        userId: convexUser._id,
-        type: form.type,
-        provider: form.provider.trim(),
-        accountName: form.accountName.trim(),
-        accountNumber: form.accountNumber.trim() || undefined,
-        qrCodeStorageId: qrStorageId ?? undefined,
-      });
-      toast.success("Payment account added");
+      if (editingId) {
+        await updateAccount({
+          accountId: editingId,
+          provider: form.provider.trim(),
+          accountName: form.accountName.trim(),
+          accountNumber: form.accountNumber.trim() || undefined,
+          qrCodeStorageId: qrStorageId ?? undefined,
+        });
+        toast.success("Payment account updated");
+      } else {
+        await addAccount({
+          userId: convexUser._id,
+          type: form.type,
+          provider: form.provider.trim(),
+          accountName: form.accountName.trim(),
+          accountNumber: form.accountNumber.trim() || undefined,
+          qrCodeStorageId: qrStorageId ?? undefined,
+        });
+        toast.success("Payment account added");
+      }
       setForm(DEFAULT_FORM);
       setQrStorageId(null);
       setShowForm(false);
+      setEditingId(null);
     } catch {
-      toast.error("Failed to add account");
+      toast.error(editingId ? "Failed to update account" : "Failed to add account");
     } finally {
       setSaving(false);
     }
+  }
+
+  function handleEdit(acc: NonNullable<typeof paymentAccounts>[number]) {
+    setForm({
+      type: acc.type,
+      provider: acc.provider,
+      accountName: acc.accountName,
+      accountNumber: acc.accountNumber ?? "",
+    });
+    setQrStorageId(acc.qrCodeStorageId ?? null);
+    setEditingId(acc._id);
+    setShowForm(true);
   }
 
   async function handleDelete(accountId: Id<"payment_accounts">) {
@@ -125,8 +150,7 @@ export default function ProfilePage() {
       <MobileContainer>
         <PageHeader title="Profile" showBack={false} />
         <ProfileSkeleton />
-        <BottomNav />
-      </MobileContainer>
+        </MobileContainer>
     );
   }
 
@@ -199,13 +223,21 @@ export default function ProfilePage() {
                       </span>
                       <span className="text-sm font-semibold text-white">{acc.provider}</span>
                     </div>
-                    <button
-                      disabled={deletingId === acc._id}
-                      onClick={() => handleDelete(acc._id)}
-                      className="p-1.5 rounded-lg text-[#6b7280] hover:text-red-400 transition-colors disabled:opacity-50"
-                    >
-                      <Trash2 size={14} />
-                    </button>
+                    <div className="flex items-center gap-1">
+                      <button
+                        onClick={() => handleEdit(acc)}
+                        className="p-1.5 rounded-lg text-[#6b7280] hover:text-[#4ade80] transition-colors"
+                      >
+                        <Pencil size={14} />
+                      </button>
+                      <button
+                        disabled={deletingId === acc._id}
+                        onClick={() => handleDelete(acc._id)}
+                        className="p-1.5 rounded-lg text-[#6b7280] hover:text-red-400 transition-colors disabled:opacity-50"
+                      >
+                        <Trash2 size={14} />
+                      </button>
+                    </div>
                   </div>
                   <p className="text-sm text-white">{acc.accountName}</p>
                   {acc.accountNumber && (
@@ -237,7 +269,7 @@ export default function ProfilePage() {
           {/* Add account form */}
           {showForm && (
             <div className="bg-[#141414] border border-[#2a2a2a] rounded-2xl p-4 space-y-3">
-              <p className="text-sm font-semibold text-white">Add Payment Account</p>
+              <p className="text-sm font-semibold text-white">{editingId ? "Edit Payment Account" : "Add Payment Account"}</p>
 
               {/* Type toggle */}
               <div className="flex gap-2">
@@ -347,6 +379,7 @@ export default function ProfilePage() {
                     setShowForm(false);
                     setForm(DEFAULT_FORM);
                     setQrStorageId(null);
+                    setEditingId(null);
                   }}
                   className="flex-1 h-10 rounded-xl border border-[#2a2a2a] text-white text-sm font-medium"
                 >
@@ -371,7 +404,6 @@ export default function ProfilePage() {
         </SignOutButton>
       </div>
 
-      <BottomNav />
     </MobileContainer>
   );
 }

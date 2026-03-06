@@ -125,7 +125,7 @@ export default function JoinPage({
             <div>
               <p className="text-xs text-[#6b7280]">Members</p>
               <p className="text-sm text-white">
-                {activeMemberCount} / {pool.maxMembers} joined
+                {activeMemberCount} joined
               </p>
             </div>
           </div>
@@ -140,7 +140,7 @@ export default function JoinPage({
         <div className="bg-[#4ade80]/5 border border-[#4ade80]/20 rounded-2xl p-4 mb-6 text-center">
           <p className="text-xs text-[#6b7280] mb-1">Total pot per member receives</p>
           <p className="text-3xl font-bold text-[#4ade80]">
-            {formatCurrency(pool.contributionAmount * pool.maxMembers, pool.currency)}
+            {formatCurrency(pool.contributionAmount * activeMemberCount, pool.currency)}
           </p>
         </div>
 

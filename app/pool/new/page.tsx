@@ -5,7 +5,6 @@ import { useMutation, useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { useCurrentUser } from "@/hooks/useCurrentUser";
 import { MobileContainer } from "@/components/layout/MobileContainer";
-import { BottomNav } from "@/components/layout/BottomNav";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { GreenButton } from "@/components/ui/GreenButton";
 import { useRouter } from "next/navigation";
@@ -20,7 +19,6 @@ interface FormData {
   contributionAmount: string;
   currency: string;
   payoutSchedule: "weekly" | "biweekly" | "mid_month" | "end_of_month";
-  maxMembers: string;
   startDate: string;
   orderType: "assigned" | "random";
   paymentVerifier: "organizer" | "recipient";
@@ -43,7 +41,6 @@ const DEFAULT_FORM: FormData = {
   contributionAmount: "",
   currency: "PHP",
   payoutSchedule: "end_of_month",
-  maxMembers: "",
   startDate: "",
   orderType: "assigned",
   paymentVerifier: "organizer",
@@ -54,11 +51,6 @@ export default function NewPoolPage() {
   const router = useRouter();
   const { convexUser } = useCurrentUser();
   const createPool = useMutation(api.pools.create);
-
-  const unreadCount = useQuery(
-    api.notifications.getUnreadCount,
-    convexUser ? { userId: convexUser._id } : "skip"
-  );
 
   const [step, setStep] = useState<Step>(1);
   const [loading, setLoading] = useState(false);
@@ -119,7 +111,6 @@ export default function NewPoolPage() {
         payoutSchedule: form.payoutSchedule,
         orderType: form.orderType,
         paymentVerifier: form.paymentVerifier,
-        maxMembers: Number(form.maxMembers),
         startDate: form.startDate ? new Date(form.startDate).getTime() : undefined,
         joinAsOrganizer: form.joinAsOrganizer,
         organizerName: convexUser.name,
@@ -136,7 +127,7 @@ export default function NewPoolPage() {
   }
 
   const step1Valid = form.name.trim() && form.contributionAmount && Number(form.contributionAmount) > 0;
-  const step2Valid = form.maxMembers && Number(form.maxMembers) >= 2;
+  const step2Valid = true;
 
   return (
     <MobileContainer>
@@ -240,23 +231,6 @@ export default function NewPoolPage() {
                   </button>
                 ))}
               </div>
-            </div>
-
-            <div>
-              <label className="text-xs text-[#6b7280] mb-1.5 block">Number of members *</label>
-              <input
-                type="number"
-                min={2}
-                className="w-full bg-[#141414] border border-[#2a2a2a] rounded-xl px-4 py-3 text-white text-sm outline-none focus:border-[#4ade80] placeholder:text-[#6b7280]"
-                placeholder="e.g. 10"
-                value={form.maxMembers}
-                onChange={(e) => set("maxMembers", e.target.value)}
-              />
-              {form.maxMembers && Number(form.maxMembers) >= 2 && (
-                <p className="text-xs text-[#6b7280] mt-1.5">
-                  Duration: {form.maxMembers} cycles
-                </p>
-              )}
             </div>
 
             <div>
@@ -381,10 +355,6 @@ export default function NewPoolPage() {
                 </span>
               </div>
               <div className="flex justify-between text-sm">
-                <span className="text-[#6b7280]">Members</span>
-                <span className="text-white">{form.maxMembers}</span>
-              </div>
-              <div className="flex justify-between text-sm">
                 <span className="text-[#6b7280]">Schedule</span>
                 <span className="text-white capitalize">{form.payoutSchedule.replace("_", " ")}</span>
               </div>
@@ -428,7 +398,6 @@ export default function NewPoolPage() {
         )}
       </div>
 
-      <BottomNav unreadCount={unreadCount ?? 0} />
     </MobileContainer>
   );
 }

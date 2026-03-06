@@ -1,10 +1,9 @@
 "use client";
 
-import { useQuery } from "convex/react";
+import { useQuery, useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { useCurrentUser } from "@/hooks/useCurrentUser";
 import { MobileContainer } from "@/components/layout/MobileContainer";
-import { BottomNav } from "@/components/layout/BottomNav";
 import { PoolCard } from "@/components/pool/PoolCard";
 import { StatCard } from "@/components/ui/StatCard";
 import { GreenButton } from "@/components/ui/GreenButton";
@@ -13,12 +12,20 @@ import { formatCurrency } from "@/lib/format";
 import Link from "next/link";
 import { Plus, Repeat2, Users, CalendarDays } from "lucide-react";
 import { PoolCardSkeleton, DashboardStatsSkeleton } from "@/components/ui/Skeleton";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
+import toast from "react-hot-toast";
 
 export default function Dashboard() {
+  const router = useRouter();
   const { convexUser, isLoaded } = useCurrentUser();
+  const [actioningId, setActioningId] = useState<string | null>(null);
 
-  const unreadCount = useQuery(
-    api.notifications.getUnreadCount,
+  const acceptInvitation = useMutation(api.invitations.accept);
+  const declineInvitation = useMutation(api.invitations.decline);
+
+  const pendingInvites = useQuery(
+    api.notifications.getPendingInvites,
     convexUser ? { userId: convexUser._id } : "skip"
   );
 
@@ -35,6 +42,37 @@ export default function Dashboard() {
     (sum, r) => sum + (r?.contributionAmount ?? 0),
     0
   );
+
+  async function handleAccept(token: string, notifId: string) {
+    if (!convexUser) return;
+    setActioningId(notifId);
+    try {
+      const poolId = await acceptInvitation({
+        token,
+        userId: convexUser._id,
+        displayName: convexUser.name,
+      });
+      toast.success("You've joined the Pool!");
+      router.push(`/pool/${poolId}`);
+    } catch (err: unknown) {
+      toast.error(err instanceof Error ? err.message : "Failed to join");
+    } finally {
+      setActioningId(null);
+    }
+  }
+
+  async function handleDecline(token: string, notifId: string) {
+    if (!convexUser) return;
+    setActioningId(notifId);
+    try {
+      await declineInvitation({ token, userId: convexUser._id });
+      toast.success("Invitation declined");
+    } catch (err: unknown) {
+      toast.error(err instanceof Error ? err.message : "Failed to decline");
+    } finally {
+      setActioningId(null);
+    }
+  }
 
   return (
     <MobileContainer>
@@ -198,6 +236,53 @@ export default function Dashboard() {
               </div>
             )}
 
+            {/* Pending invites */}
+            {pendingInvites && pendingInvites.length > 0 && (
+              <div className="mb-6">
+                <p className="text-xs text-[#6b7280] font-medium uppercase tracking-wider mb-2">
+                  Pending Invites
+                </p>
+                <div className="space-y-2">
+                  {pendingInvites.map((inv) => (
+                    <div
+                      key={inv._id}
+                      className="bg-[#1c1c1c] border border-[#4ade80]/20 rounded-2xl p-4"
+                    >
+                      <div className="flex items-center gap-3 mb-3">
+                        <div className="w-9 h-9 rounded-full bg-[#4ade80]/10 flex items-center justify-center shrink-0">
+                          <span className="text-sm">📩</span>
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-semibold text-white truncate">
+                            {inv.poolName}
+                          </p>
+                          <p className="text-xs text-[#6b7280]">
+                            by {inv.organizerName} · {formatCurrency(inv.contributionAmount, inv.currency)}/cycle
+                          </p>
+                        </div>
+                      </div>
+                      <div className="flex gap-2">
+                        <button
+                          disabled={actioningId === inv._id}
+                          onClick={() => handleAccept(inv.invitationToken!, inv._id)}
+                          className="flex-1 h-9 rounded-xl bg-[#4ade80] text-black text-xs font-semibold disabled:opacity-50"
+                        >
+                          {actioningId === inv._id ? "..." : "Accept"}
+                        </button>
+                        <button
+                          disabled={actioningId === inv._id}
+                          onClick={() => handleDecline(inv.invitationToken!, inv._id)}
+                          className="flex-1 h-9 rounded-xl border border-[#2a2a2a] text-[#6b7280] text-xs font-medium disabled:opacity-50"
+                        >
+                          Decline
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
             {/* Pool list */}
             {!isLoaded ? (
               <div className="space-y-3">
@@ -253,7 +338,6 @@ export default function Dashboard() {
             )}
           </div>
         </div>
-        <BottomNav unreadCount={unreadCount ?? 0} />
       </Show>
     </MobileContainer>
   );

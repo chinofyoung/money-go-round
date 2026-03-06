@@ -78,7 +78,7 @@ export default function InvitePage({
           <div className="bg-[#141414] border border-[#2a2a2a] rounded-2xl p-4">
             <p className="text-sm font-semibold text-white mb-1">{pool.name}</p>
             <p className="text-xs text-[#6b7280]">
-              {activeCount} of {pool.maxMembers} members joined
+              {activeCount} members joined
               {invitedCount > 0 && ` · ${invitedCount} pending`}
             </p>
           </div>

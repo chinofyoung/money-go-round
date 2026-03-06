@@ -112,7 +112,7 @@ export default function PaymentsPage({
             {currentCycle && recipient && (
               <CycleCard
                 cycleNumber={currentCycle.cycleNumber}
-                totalCycles={pool.maxMembers}
+                totalCycles={activeMembers.length}
                 recipientName={recipient.displayName ?? ""}
                 recipientEmail={recipient.email}
                 payoutDate={currentCycle.payoutDate}

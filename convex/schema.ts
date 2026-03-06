@@ -133,7 +133,8 @@ export default defineSchema({
       v.literal("member_joined"),
       v.literal("order_assigned"),
       v.literal("pool_started"),
-      v.literal("invite_received")
+      v.literal("invite_received"),
+      v.literal("announcement_posted")
     ),
     message: v.string(),
     poolId: v.optional(v.id("pools")),

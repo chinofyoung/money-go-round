@@ -16,7 +16,6 @@ export const create = mutation({
     ),
     orderType: v.union(v.literal("assigned"), v.literal("random")),
     paymentVerifier: v.union(v.literal("organizer"), v.literal("recipient")),
-    maxMembers: v.number(),
     startDate: v.optional(v.number()),
     joinAsOrganizer: v.optional(v.boolean()),
     organizerName: v.optional(v.string()),
@@ -25,6 +24,7 @@ export const create = mutation({
   handler: async (ctx, { joinAsOrganizer, organizerName, organizerEmail, ...rest }) => {
     const poolId = await ctx.db.insert("pools", {
       ...rest,
+      maxMembers: 0,
       status: "draft",
       currentCycle: 0,
     });
@@ -63,7 +63,6 @@ export const update = mutation({
     paymentVerifier: v.optional(
       v.union(v.literal("organizer"), v.literal("recipient"))
     ),
-    maxMembers: v.optional(v.number()),
     startDate: v.optional(v.number()),
   },
   handler: async (ctx, args) => {
@@ -185,6 +184,7 @@ export const activate = mutation({
       status: "active",
       currentCycle: 1,
       startDate: args.startDate,
+      maxMembers: sortedMembers.length,
     });
   },
 });
