@@ -1,65 +1,260 @@
-import Image from "next/image";
+"use client";
 
-export default function Home() {
+import { useQuery } from "convex/react";
+import { api } from "@/convex/_generated/api";
+import { useCurrentUser } from "@/hooks/useCurrentUser";
+import { MobileContainer } from "@/components/layout/MobileContainer";
+import { BottomNav } from "@/components/layout/BottomNav";
+import { PoolCard } from "@/components/pool/PoolCard";
+import { StatCard } from "@/components/ui/StatCard";
+import { GreenButton } from "@/components/ui/GreenButton";
+import { Show } from "@clerk/nextjs";
+import { formatCurrency } from "@/lib/format";
+import Link from "next/link";
+import { Plus, Repeat2, Users, CalendarDays } from "lucide-react";
+import { PoolCardSkeleton, DashboardStatsSkeleton } from "@/components/ui/Skeleton";
+
+export default function Dashboard() {
+  const { convexUser, isLoaded } = useCurrentUser();
+
+  const unreadCount = useQuery(
+    api.notifications.getUnreadCount,
+    convexUser ? { userId: convexUser._id } : "skip"
+  );
+
+  const poolData = useQuery(
+    api.pools.listForUser,
+    convexUser ? { userId: convexUser._id } : "skip"
+  );
+
+  const organized = poolData?.organized ?? [];
+  const member = (poolData?.member ?? []).filter(Boolean);
+  const allPools = [...organized, ...member];
+  const activePools = allPools.filter((r) => r?.status === "active");
+  const totalContributions = activePools.reduce(
+    (sum, r) => sum + (r?.contributionAmount ?? 0),
+    0
+  );
+
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
+    <MobileContainer>
+      {/* ── Signed-out: full landing screen ── */}
+      <Show when="signed-out">
+        <div className="flex-1 flex flex-col relative overflow-hidden">
+          {/* Atmospheric glow */}
+          <div
+            className="absolute -top-10 left-1/2 -translate-x-1/2 w-[360px] h-[360px] rounded-full pointer-events-none"
+            style={{
+              background:
+                "radial-gradient(circle, rgba(74,222,128,0.09) 0%, transparent 70%)",
+              animation: "glow-pulse 5s ease-in-out infinite",
+            }}
+          />
+
+          {/* Hero */}
+          <div className="flex-1 flex flex-col items-center justify-center px-6 pt-16">
+            {/* Logo mark */}
+            <div
+              className="relative mb-8"
+              style={{ width: 88, height: 88, animation: "fade-up 0.5s ease both" }}
             >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
+              <svg viewBox="0 0 88 88" fill="none" className="absolute inset-0 w-full h-full">
+                <circle cx="44" cy="44" r="40" stroke="#222" strokeWidth="1.5" />
+                <circle cx="44" cy="44" r="27" stroke="#1e1e1e" strokeWidth="1" strokeDasharray="3 6" />
+                <circle cx="44" cy="44" r="13" fill="url(#greenCore)" />
+                <circle cx="44" cy="44" r="40" stroke="url(#greenArc)" strokeWidth="1.5" strokeDasharray="22 230" strokeLinecap="round" />
+                <defs>
+                  <radialGradient id="greenCore" cx="35%" cy="30%" r="65%">
+                    <stop offset="0%" stopColor="#86efac" />
+                    <stop offset="100%" stopColor="#15803d" />
+                  </radialGradient>
+                  <linearGradient id="greenArc" x1="0" y1="0" x2="88" y2="88" gradientUnits="userSpaceOnUse">
+                    <stop offset="0%" stopColor="#4ade80" />
+                    <stop offset="100%" stopColor="#22c55e" />
+                  </linearGradient>
+                </defs>
+              </svg>
+              {/* Orbiting dot */}
+              <div
+                className="absolute inset-0"
+                style={{ animation: "spin-orbit 6s linear infinite", transformOrigin: "center" }}
+              >
+                <div
+                  className="absolute rounded-full"
+                  style={{
+                    width: 10,
+                    height: 10,
+                    top: "50%",
+                    left: "50%",
+                    transform: "translate(calc(-50% + 40px), -50%)",
+                    background: "#4ade80",
+                    boxShadow: "0 0 8px #4ade80, 0 0 20px rgba(74,222,128,0.4)",
+                  }}
+                />
+              </div>
+            </div>
+
+            {/* Wordmark */}
+            <h1
+              className="text-[2.25rem] font-bold text-white tracking-tight leading-none text-center mb-3"
+              style={{ animation: "fade-up 0.5s ease 0.1s both" }}
             >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+              Money Go Round
+            </h1>
+
+            {/* Tagline */}
+            <p
+              className="text-[#505050] text-center text-sm leading-relaxed mb-12 max-w-[210px]"
+              style={{ animation: "fade-up 0.5s ease 0.2s both" }}
+            >
+              Save together. Get paid when it&apos;s your turn.
+            </p>
+
+            {/* Features */}
+            <div
+              className="w-full space-y-2.5"
+              style={{ animation: "fade-up 0.5s ease 0.3s both" }}
+            >
+              {[
+                {
+                  Icon: Repeat2,
+                  label: "Rotating payouts",
+                  desc: "Everyone gets the full pot, guaranteed",
+                },
+                {
+                  Icon: Users,
+                  label: "Invite-only circles",
+                  desc: "Your people. Your rules.",
+                },
+                {
+                  Icon: CalendarDays,
+                  label: "Stays organized",
+                  desc: "Track contributions and schedules",
+                },
+              ].map(({ Icon, label, desc }) => (
+                <div
+                  key={label}
+                  className="flex items-center gap-3.5 bg-[#111111] border border-[#232323] rounded-2xl px-4 py-3.5"
+                >
+                  <div className="w-9 h-9 rounded-xl bg-[#1a1a1a] border border-[#2a2a2a] flex items-center justify-center flex-shrink-0">
+                    <Icon size={15} className="text-[#4ade80]" />
+                  </div>
+                  <div>
+                    <p className="text-white text-[13px] font-semibold leading-snug">{label}</p>
+                    <p className="text-[#4a4a4a] text-xs mt-0.5 leading-snug">{desc}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* CTA */}
+          <div
+            className="px-6 pb-10 pt-6"
+            style={{ animation: "fade-up 0.5s ease 0.4s both" }}
           >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+            <Link href="/sign-in">
+              <GreenButton size="lg" fullWidth>
+                Continue with Google
+              </GreenButton>
+            </Link>
+            <p className="text-center text-[#333] text-xs mt-4">
+              By continuing you agree to our Terms &amp; Privacy Policy
+            </p>
+          </div>
         </div>
-      </main>
-    </div>
+      </Show>
+
+      {/* ── Signed-in: dashboard ── */}
+      <Show when="signed-in">
+        <div className="flex-1 overflow-y-auto">
+          <div className="px-4 pt-12 pb-6">
+            {/* Greeting */}
+            <div className="flex items-center justify-between mb-6">
+              <div>
+                <p className="text-[#6b7280] text-sm">Welcome back</p>
+                <h1 className="text-xl font-bold text-white">
+                  {convexUser?.name?.split(" ")[0] ?? "—"}
+                </h1>
+              </div>
+              <Link href="/pool/new">
+                <button className="w-10 h-10 rounded-full bg-gradient-to-r from-[#4ade80] to-[#22c55e] flex items-center justify-center active:scale-95 transition-transform">
+                  <Plus size={20} className="text-black font-bold" />
+                </button>
+              </Link>
+            </div>
+
+            {/* Stats */}
+            {!isLoaded ? (
+              <DashboardStatsSkeleton />
+            ) : (
+              <div className="bg-[#141414] border border-[#2a2a2a] rounded-2xl p-4 grid grid-cols-3 gap-4 mb-6">
+                <StatCard label="Active groups" value={String(activePools.length)} />
+                <StatCard
+                  label="Monthly"
+                  value={formatCurrency(totalContributions, "PHP")}
+                />
+                <StatCard label="Total groups" value={String(allPools.length)} />
+              </div>
+            )}
+
+            {/* Pool list */}
+            {!isLoaded ? (
+              <div className="space-y-3">
+                <PoolCardSkeleton />
+                <PoolCardSkeleton />
+              </div>
+            ) : allPools.length === 0 ? (
+              <div className="flex flex-col items-center gap-4 py-12">
+                <div className="w-16 h-16 rounded-full bg-[#141414] flex items-center justify-center">
+                  <Plus size={28} className="text-[#4ade80]" />
+                </div>
+                <p className="text-[#6b7280] text-sm text-center">
+                  No Pools yet. Create one or wait for an invite.
+                </p>
+                <Link href="/pool/new">
+                  <GreenButton>Create Pool</GreenButton>
+                </Link>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {organized.map((r) =>
+                  r ? (
+                    <PoolCard
+                      key={r._id}
+                      id={r._id}
+                      name={r.name}
+                      contributionAmount={r.contributionAmount}
+                      currency={r.currency}
+                      status={r.status}
+                      currentCycle={r.currentCycle}
+                      maxMembers={r.maxMembers}
+                      payoutSchedule={r.payoutSchedule}
+                      isOrganizer
+                    />
+                  ) : null
+                )}
+                {member.map((r) =>
+                  r ? (
+                    <PoolCard
+                      key={r._id}
+                      id={r._id}
+                      name={r.name}
+                      contributionAmount={r.contributionAmount}
+                      currency={r.currency}
+                      status={r.status}
+                      currentCycle={r.currentCycle}
+                      maxMembers={r.maxMembers}
+                      payoutSchedule={r.payoutSchedule}
+                    />
+                  ) : null
+                )}
+              </div>
+            )}
+          </div>
+        </div>
+        <BottomNav unreadCount={unreadCount ?? 0} />
+      </Show>
+    </MobileContainer>
   );
 }
