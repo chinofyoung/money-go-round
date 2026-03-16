@@ -3,7 +3,8 @@
 import { useQuery, useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { useCurrentUser } from "@/hooks/useCurrentUser";
-import { MobileContainer } from "@/components/layout/MobileContainer";
+import { ResponsiveLayout } from "@/components/layout/ResponsiveLayout";
+import { DesktopPoolDetail } from "@/components/desktop/DesktopPoolDetail";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { CycleCard } from "@/components/pool/CycleCard";
 import { MemberRow } from "@/components/pool/MemberRow";
@@ -71,10 +72,10 @@ export default function PoolDetailPage({
 
   if (!pool) {
     return (
-      <MobileContainer>
+      <ResponsiveLayout desktopContent={<DesktopPoolDetail poolId={id} />}>
         <PageHeader title="Pool" />
         <PoolDetailSkeleton />
-      </MobileContainer>
+      </ResponsiveLayout>
     );
   }
 
@@ -129,7 +130,7 @@ export default function PoolDetailPage({
   ];
 
   return (
-    <MobileContainer>
+    <ResponsiveLayout desktopContent={<DesktopPoolDetail poolId={id} />}>
       <PageHeader
         title={pool.name}
         action={
@@ -381,6 +382,6 @@ export default function PoolDetailPage({
           </div>
         )}
       </div>
-    </MobileContainer>
+    </ResponsiveLayout>
   );
 }
