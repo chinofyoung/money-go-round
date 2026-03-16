@@ -1,0 +1,54 @@
+<h2>Dashboard Home Content</h2>
+<p class="subtitle">What should fill the main content area on the desktop dashboard?</p>
+
+<div class="options" data-multiselect>
+  <div class="option" data-choice="stats" onclick="toggleSelect(this)">
+    <div class="letter">1</div>
+    <div class="content">
+      <h3>Stats Overview Row</h3>
+      <p>Top-level numbers: active pools, total monthly contributions, upcoming payouts, total members across all pools. Shown as stat cards in a row.</p>
+    </div>
+  </div>
+
+  <div class="option" data-choice="pools" onclick="toggleSelect(this)">
+    <div class="letter">2</div>
+    <div class="content">
+      <h3>Pools Grid/List</h3>
+      <p>All your pools displayed as cards in a grid (not a single-column list). Each card shows pool name, status, progress, amount, and member count.</p>
+    </div>
+  </div>
+
+  <div class="option" data-choice="cycle" onclick="toggleSelect(this)">
+    <div class="letter">3</div>
+    <div class="content">
+      <h3>Current Cycle / Action Items</h3>
+      <p>A panel showing what needs your attention: pending payments, pools waiting for your contribution, upcoming payout dates. Actionable items front and center.</p>
+    </div>
+  </div>
+
+  <div class="option" data-choice="notifications" onclick="toggleSelect(this)">
+    <div class="letter">4</div>
+    <div class="content">
+      <h3>Recent Notifications / Activity Feed</h3>
+      <p>A sidebar panel showing latest activity: new payments submitted, members joined, announcements. Quick glanceable feed.</p>
+    </div>
+  </div>
+
+  <div class="option" data-choice="schedule" onclick="toggleSelect(this)">
+    <div class="letter">5</div>
+    <div class="content">
+      <h3>Upcoming Schedule</h3>
+      <p>A calendar-like or timeline view of upcoming payout dates across all pools. Helps plan finances at a glance.</p>
+    </div>
+  </div>
+
+  <div class="option" data-choice="invites" onclick="toggleSelect(this)">
+    <div class="letter">6</div>
+    <div class="content">
+      <h3>Pending Invitations</h3>
+      <p>A small section showing any pool invitations waiting for your response, with accept/decline actions.</p>
+    </div>
+  </div>
+</div>
+
+<p class="subtitle" style="margin-top: 16px;">Select all that you want on the dashboard. Click multiple items.</p>

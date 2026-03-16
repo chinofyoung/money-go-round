@@ -26,7 +26,7 @@ export function GreenButton({
       {...props}
       disabled={disabled}
       className={[
-        "rounded-full font-semibold text-black transition-opacity",
+        "rounded-full font-semibold text-black transition-opacity flex items-center",
         "bg-gradient-to-r from-[#4ade80] to-[#22c55e]",
         "disabled:opacity-40 disabled:cursor-not-allowed",
         "active:scale-[0.98]",

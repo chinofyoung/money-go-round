@@ -1,0 +1,265 @@
+<h2>Dashboard Layout Arrangement</h2>
+<p class="subtitle">How should the 6 panels be arranged in the main content area?</p>
+
+<div class="cards">
+  <div class="card" data-choice="a" onclick="toggleSelect(this)">
+    <div class="card-image" style="padding: 20px; background: #1a1a2e;">
+      <div style="display: flex; height: 360px; gap: 0; border-radius: 8px; overflow: hidden; border: 1px solid #333;">
+        <!-- Sidebar -->
+        <div style="width: 140px; background: #0d0d1a; padding: 14px; display: flex; flex-direction: column; gap: 4px;">
+          <div style="display: flex; align-items: center; gap: 6px; margin-bottom: 10px;">
+            <div style="width: 22px; height: 22px; border-radius: 50%; background: linear-gradient(135deg, #4ade80, #22c55e);"></div>
+            <div style="font-size: 9px; color: #fff; font-weight: 600;">MoneyGoRound</div>
+          </div>
+          <div style="height: 26px; border-radius: 6px; background: rgba(74,222,128,0.15); padding: 0 8px; display: flex; align-items: center;">
+            <div style="font-size: 8px; color: #4ade80;">Dashboard</div>
+          </div>
+          <div style="height: 26px; border-radius: 6px; padding: 0 8px; display: flex; align-items: center;">
+            <div style="font-size: 8px; color: #888;">My Pools</div>
+          </div>
+          <div style="height: 26px; border-radius: 6px; padding: 0 8px; display: flex; align-items: center;">
+            <div style="font-size: 8px; color: #888;">Notifications</div>
+          </div>
+          <div style="height: 26px; border-radius: 6px; padding: 0 8px; display: flex; align-items: center;">
+            <div style="font-size: 8px; color: #888;">Profile</div>
+          </div>
+        </div>
+        <!-- Main content -->
+        <div style="flex: 1; background: #111; padding: 14px; display: flex; flex-direction: column; gap: 10px; overflow: hidden;">
+          <!-- Header -->
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <div>
+              <div style="font-size: 12px; color: #fff; font-weight: 600;">Welcome back!</div>
+              <div style="font-size: 8px; color: #888;">March 16, 2026</div>
+            </div>
+            <div style="width: 90px; height: 26px; border-radius: 6px; background: linear-gradient(135deg, #4ade80, #22c55e); display: flex; align-items: center; justify-content: center;">
+              <div style="font-size: 8px; color: #000; font-weight: 600;">+ Create Pool</div>
+            </div>
+          </div>
+
+          <!-- Row 1: Stats -->
+          <div style="display: flex; gap: 6px;">
+            <div style="flex:1; height: 44px; border-radius: 6px; background: #1a1a1a; border: 1px solid #2a2a2a; padding: 6px;">
+              <div style="font-size: 7px; color: #888;">Active Pools</div>
+              <div style="font-size: 14px; color: #fff; font-weight: 700;">3</div>
+            </div>
+            <div style="flex:1; height: 44px; border-radius: 6px; background: #1a1a1a; border: 1px solid #2a2a2a; padding: 6px;">
+              <div style="font-size: 7px; color: #888;">Monthly Total</div>
+              <div style="font-size: 14px; color: #fff; font-weight: 700;">₱15k</div>
+            </div>
+            <div style="flex:1; height: 44px; border-radius: 6px; background: #1a1a1a; border: 1px solid #2a2a2a; padding: 6px;">
+              <div style="font-size: 7px; color: #888;">Next Payout</div>
+              <div style="font-size: 14px; color: #4ade80; font-weight: 700;">Mar 20</div>
+            </div>
+            <div style="flex:1; height: 44px; border-radius: 6px; background: #1a1a1a; border: 1px solid #2a2a2a; padding: 6px;">
+              <div style="font-size: 7px; color: #888;">Total Members</div>
+              <div style="font-size: 14px; color: #fff; font-weight: 700;">16</div>
+            </div>
+          </div>
+
+          <!-- Row 2: Action Items + Invites -->
+          <div style="display: flex; gap: 6px;">
+            <div style="flex: 2; border-radius: 6px; background: #1a1a1a; border: 1px solid #2a2a2a; padding: 8px;">
+              <div style="font-size: 8px; color: #f59e0b; font-weight: 600; margin-bottom: 6px;">⚡ Action Items</div>
+              <div style="display: flex; flex-direction: column; gap: 4px;">
+                <div style="height: 22px; border-radius: 4px; background: rgba(245,158,11,0.1); border: 1px solid rgba(245,158,11,0.2); padding: 0 6px; display: flex; align-items: center;">
+                  <div style="font-size: 7px; color: #fbbf24;">Pay ₱5,000 to Office Paluwagan</div>
+                </div>
+                <div style="height: 22px; border-radius: 4px; background: rgba(74,222,128,0.1); border: 1px solid rgba(74,222,128,0.2); padding: 0 6px; display: flex; align-items: center;">
+                  <div style="font-size: 7px; color: #4ade80;">Review payment from Maria</div>
+                </div>
+              </div>
+            </div>
+            <div style="flex: 1; border-radius: 6px; background: #1a1a1a; border: 1px solid #2a2a2a; padding: 8px;">
+              <div style="font-size: 8px; color: #888; font-weight: 600; margin-bottom: 6px;">Invitations</div>
+              <div style="height: 22px; border-radius: 4px; background: #222; padding: 0 6px; display: flex; align-items: center; justify-content: space-between;">
+                <div style="font-size: 7px; color: #ccc;">Gym Savings Group</div>
+                <div style="font-size: 7px; color: #4ade80;">Accept</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Row 3: Pools Grid + Right sidebar (Activity + Schedule) -->
+          <div style="display: flex; gap: 6px; flex: 1; min-height: 0;">
+            <!-- Pools grid -->
+            <div style="flex: 2; border-radius: 6px; background: #1a1a1a; border: 1px solid #2a2a2a; padding: 8px; overflow: hidden;">
+              <div style="font-size: 8px; color: #888; font-weight: 600; margin-bottom: 6px;">My Pools</div>
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 4px;">
+                <div style="height: 48px; border-radius: 4px; background: #222; border: 1px solid #2a2a2a; padding: 4px;">
+                  <div style="font-size: 7px; color: #fff;">Office Paluwagan</div>
+                  <div style="font-size: 6px; color: #4ade80;">Active · ₱5,000</div>
+                  <div style="height: 3px; background: #333; border-radius: 2px; margin-top: 4px;"><div style="width: 60%; height: 100%; background: #4ade80; border-radius: 2px;"></div></div>
+                </div>
+                <div style="height: 48px; border-radius: 4px; background: #222; border: 1px solid #2a2a2a; padding: 4px;">
+                  <div style="font-size: 7px; color: #fff;">Family Savings</div>
+                  <div style="font-size: 6px; color: #888;">Draft · ₱3,000</div>
+                  <div style="height: 3px; background: #333; border-radius: 2px; margin-top: 4px;"><div style="width: 0%; height: 100%; background: #4ade80; border-radius: 2px;"></div></div>
+                </div>
+                <div style="height: 48px; border-radius: 4px; background: #222; border: 1px solid #2a2a2a; padding: 4px;">
+                  <div style="font-size: 7px; color: #fff;">Barkada Fund</div>
+                  <div style="font-size: 6px; color: #4ade80;">Active · ₱2,000</div>
+                  <div style="height: 3px; background: #333; border-radius: 2px; margin-top: 4px;"><div style="width: 40%; height: 100%; background: #4ade80; border-radius: 2px;"></div></div>
+                </div>
+              </div>
+            </div>
+            <!-- Right sidebar: Activity + Schedule stacked -->
+            <div style="flex: 1; display: flex; flex-direction: column; gap: 6px; min-height: 0;">
+              <div style="flex: 1; border-radius: 6px; background: #1a1a1a; border: 1px solid #2a2a2a; padding: 8px; overflow: hidden;">
+                <div style="font-size: 8px; color: #888; font-weight: 600; margin-bottom: 4px;">Activity</div>
+                <div style="display: flex; flex-direction: column; gap: 3px;">
+                  <div style="font-size: 6px; color: #ccc;">Juan paid ₱5,000 <span style="color:#666;">2h ago</span></div>
+                  <div style="font-size: 6px; color: #ccc;">Anna joined pool <span style="color:#666;">5h ago</span></div>
+                </div>
+              </div>
+              <div style="flex: 1; border-radius: 6px; background: #1a1a1a; border: 1px solid #2a2a2a; padding: 8px; overflow: hidden;">
+                <div style="font-size: 8px; color: #888; font-weight: 600; margin-bottom: 4px;">Schedule</div>
+                <div style="display: flex; flex-direction: column; gap: 3px;">
+                  <div style="font-size: 6px; color: #4ade80;">Mar 20 — You receive ₱40k</div>
+                  <div style="font-size: 6px; color: #ccc;">Apr 3 — Maria receives</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>A. Dense Dashboard</h3>
+      <p>Everything visible at once. Stats row on top, action items + invites in the middle, pools grid + activity/schedule on the bottom. Information-dense, minimal scrolling.</p>
+    </div>
+  </div>
+
+  <div class="card" data-choice="b" onclick="toggleSelect(this)">
+    <div class="card-image" style="padding: 20px; background: #1a1a2e;">
+      <div style="display: flex; height: 360px; gap: 0; border-radius: 8px; overflow: hidden; border: 1px solid #333;">
+        <!-- Sidebar -->
+        <div style="width: 140px; background: #0d0d1a; padding: 14px; display: flex; flex-direction: column; gap: 4px;">
+          <div style="display: flex; align-items: center; gap: 6px; margin-bottom: 10px;">
+            <div style="width: 22px; height: 22px; border-radius: 50%; background: linear-gradient(135deg, #4ade80, #22c55e);"></div>
+            <div style="font-size: 9px; color: #fff; font-weight: 600;">MoneyGoRound</div>
+          </div>
+          <div style="height: 26px; border-radius: 6px; background: rgba(74,222,128,0.15); padding: 0 8px; display: flex; align-items: center;">
+            <div style="font-size: 8px; color: #4ade80;">Dashboard</div>
+          </div>
+          <div style="height: 26px; border-radius: 6px; padding: 0 8px; display: flex; align-items: center;">
+            <div style="font-size: 8px; color: #888;">My Pools</div>
+          </div>
+          <div style="height: 26px; border-radius: 6px; padding: 0 8px; display: flex; align-items: center;">
+            <div style="font-size: 8px; color: #888;">Notifications</div>
+          </div>
+          <div style="height: 26px; border-radius: 6px; padding: 0 8px; display: flex; align-items: center;">
+            <div style="font-size: 8px; color: #888;">Profile</div>
+          </div>
+        </div>
+        <!-- Main: wide left + narrow right -->
+        <div style="flex: 1; display: flex; gap: 0;">
+          <!-- Primary column (scrollable) -->
+          <div style="flex: 2; background: #111; padding: 14px; display: flex; flex-direction: column; gap: 10px; border-right: 1px solid #222;">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <div>
+                <div style="font-size: 12px; color: #fff; font-weight: 600;">Welcome back!</div>
+                <div style="font-size: 8px; color: #888;">March 16, 2026</div>
+              </div>
+              <div style="width: 90px; height: 26px; border-radius: 6px; background: linear-gradient(135deg, #4ade80, #22c55e); display: flex; align-items: center; justify-content: center;">
+                <div style="font-size: 8px; color: #000; font-weight: 600;">+ Create Pool</div>
+              </div>
+            </div>
+
+            <!-- Stats -->
+            <div style="display: flex; gap: 6px;">
+              <div style="flex:1; height: 44px; border-radius: 6px; background: #1a1a1a; border: 1px solid #2a2a2a; padding: 6px;">
+                <div style="font-size: 7px; color: #888;">Active Pools</div>
+                <div style="font-size: 14px; color: #fff; font-weight: 700;">3</div>
+              </div>
+              <div style="flex:1; height: 44px; border-radius: 6px; background: #1a1a1a; border: 1px solid #2a2a2a; padding: 6px;">
+                <div style="font-size: 7px; color: #888;">Monthly Total</div>
+                <div style="font-size: 14px; color: #fff; font-weight: 700;">₱15k</div>
+              </div>
+              <div style="flex:1; height: 44px; border-radius: 6px; background: #1a1a1a; border: 1px solid #2a2a2a; padding: 6px;">
+                <div style="font-size: 7px; color: #888;">Next Payout</div>
+                <div style="font-size: 14px; color: #4ade80; font-weight: 700;">Mar 20</div>
+              </div>
+            </div>
+
+            <!-- Action Items -->
+            <div style="border-radius: 6px; background: #1a1a1a; border: 1px solid #2a2a2a; padding: 8px;">
+              <div style="font-size: 8px; color: #f59e0b; font-weight: 600; margin-bottom: 6px;">⚡ Action Items</div>
+              <div style="display: flex; flex-direction: column; gap: 4px;">
+                <div style="height: 22px; border-radius: 4px; background: rgba(245,158,11,0.1); border: 1px solid rgba(245,158,11,0.2); padding: 0 6px; display: flex; align-items: center;">
+                  <div style="font-size: 7px; color: #fbbf24;">Pay ₱5,000 to Office Paluwagan — due Mar 18</div>
+                </div>
+                <div style="height: 22px; border-radius: 4px; background: rgba(74,222,128,0.1); border: 1px solid rgba(74,222,128,0.2); padding: 0 6px; display: flex; align-items: center;">
+                  <div style="font-size: 7px; color: #4ade80;">Review payment from Maria Santos</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Pools -->
+            <div style="border-radius: 6px; background: #1a1a1a; border: 1px solid #2a2a2a; padding: 8px; flex: 1;">
+              <div style="display: flex; justify-content: space-between; margin-bottom: 6px;">
+                <div style="font-size: 8px; color: #888; font-weight: 600;">My Pools</div>
+                <div style="font-size: 7px; color: #4ade80;">View all →</div>
+              </div>
+              <div style="display: flex; gap: 6px;">
+                <div style="flex:1; height: 56px; border-radius: 4px; background: #222; border: 1px solid #2a2a2a; padding: 6px;">
+                  <div style="font-size: 7px; color: #fff;">Office Paluwagan</div>
+                  <div style="font-size: 6px; color: #4ade80;">Active · 8 members</div>
+                  <div style="height: 3px; background: #333; border-radius: 2px; margin-top: 6px;"><div style="width: 60%; height: 100%; background: #4ade80; border-radius: 2px;"></div></div>
+                </div>
+                <div style="flex:1; height: 56px; border-radius: 4px; background: #222; border: 1px solid #2a2a2a; padding: 6px;">
+                  <div style="font-size: 7px; color: #fff;">Barkada Fund</div>
+                  <div style="font-size: 6px; color: #4ade80;">Active · 5 members</div>
+                  <div style="height: 3px; background: #333; border-radius: 2px; margin-top: 6px;"><div style="width: 40%; height: 100%; background: #4ade80; border-radius: 2px;"></div></div>
+                </div>
+                <div style="flex:1; height: 56px; border-radius: 4px; background: #222; border: 1px solid #2a2a2a; padding: 6px;">
+                  <div style="font-size: 7px; color: #fff;">Family Savings</div>
+                  <div style="font-size: 6px; color: #888;">Draft · 3 members</div>
+                  <div style="height: 3px; background: #333; border-radius: 2px; margin-top: 6px;"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Right panel -->
+          <div style="width: 160px; background: #0a0a0a; padding: 14px; display: flex; flex-direction: column; gap: 10px;">
+            <!-- Invitations -->
+            <div style="border-radius: 6px; background: #1a1a1a; border: 1px solid #2a2a2a; padding: 8px;">
+              <div style="font-size: 8px; color: #888; font-weight: 600; margin-bottom: 6px;">Invitations</div>
+              <div style="border-radius: 4px; background: #222; padding: 6px; margin-bottom: 4px;">
+                <div style="font-size: 7px; color: #ccc;">Gym Savings</div>
+                <div style="display: flex; gap: 4px; margin-top: 4px;">
+                  <div style="flex:1; height: 16px; border-radius: 3px; background: #4ade80; display: flex; align-items: center; justify-content: center;"><div style="font-size: 6px; color: #000;">Accept</div></div>
+                  <div style="flex:1; height: 16px; border-radius: 3px; background: #333; display: flex; align-items: center; justify-content: center;"><div style="font-size: 6px; color: #888;">Decline</div></div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Schedule -->
+            <div style="border-radius: 6px; background: #1a1a1a; border: 1px solid #2a2a2a; padding: 8px;">
+              <div style="font-size: 8px; color: #888; font-weight: 600; margin-bottom: 6px;">Upcoming</div>
+              <div style="display: flex; flex-direction: column; gap: 4px;">
+                <div style="font-size: 6px; color: #4ade80;">Mar 20 — You receive ₱40k</div>
+                <div style="font-size: 6px; color: #ccc;">Apr 3 — Maria receives</div>
+                <div style="font-size: 6px; color: #ccc;">Apr 17 — Juan receives</div>
+              </div>
+            </div>
+
+            <!-- Activity -->
+            <div style="flex:1; border-radius: 6px; background: #1a1a1a; border: 1px solid #2a2a2a; padding: 8px;">
+              <div style="font-size: 8px; color: #888; font-weight: 600; margin-bottom: 6px;">Activity</div>
+              <div style="display: flex; flex-direction: column; gap: 4px;">
+                <div style="font-size: 6px; color: #ccc;">Juan paid ₱5k <span style="color:#666;">2h</span></div>
+                <div style="font-size: 6px; color: #ccc;">Anna joined <span style="color:#666;">5h</span></div>
+                <div style="font-size: 6px; color: #ccc;">Pool started <span style="color:#666;">1d</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>B. Two-Column with Right Panel</h3>
+      <p>Main content (stats, actions, pools) on the left. Narrow right panel for secondary info (invitations, schedule, activity feed). Feels like a proper dashboard with a glanceable sidebar.</p>
+    </div>
+  </div>
+</div>

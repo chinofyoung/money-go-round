@@ -95,7 +95,7 @@ export function DashboardView() {
   });
 
   return (
-    <div className="p-8 max-w-[1200px] mx-auto">
+    <div className="p-8">
       {/* Header */}
       <div className="flex items-center justify-between mb-8">
         <div>

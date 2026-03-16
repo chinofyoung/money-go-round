@@ -27,7 +27,9 @@ export function ResponsiveLayout({
       <div className="hidden lg:flex h-screen bg-black">
         {showSidebar && <Sidebar />}
         <main className="flex-1 overflow-y-auto">
-          {desktopContent ?? children}
+          <div className="max-w-5xl mx-auto">
+            {desktopContent ?? children}
+          </div>
         </main>
       </div>
     </>

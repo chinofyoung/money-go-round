@@ -1,0 +1,133 @@
+<h2>Pool Detail View on Desktop</h2>
+<p class="subtitle">When a user clicks on a pool, how should the detail appear?</p>
+
+<div class="cards">
+  <div class="card" data-choice="a" onclick="toggleSelect(this)">
+    <div class="card-image" style="padding: 20px; background: #1a1a2e;">
+      <div style="display: flex; height: 280px; gap: 0; border-radius: 8px; overflow: hidden; border: 1px solid #333;">
+        <!-- Sidebar -->
+        <div style="width: 160px; background: #0d0d1a; padding: 16px; display: flex; flex-direction: column; gap: 4px;">
+          <div style="display: flex; align-items: center; gap: 6px; margin-bottom: 12px;">
+            <div style="width: 24px; height: 24px; border-radius: 50%; background: linear-gradient(135deg, #4ade80, #22c55e);"></div>
+            <div style="font-size: 10px; color: #fff; font-weight: 600;">MoneyGoRound</div>
+          </div>
+          <div style="height: 28px; border-radius: 6px; background: rgba(74,222,128,0.15); padding: 0 8px; display: flex; align-items: center;">
+            <div style="font-size: 9px; color: #4ade80;">Dashboard</div>
+          </div>
+          <div style="height: 28px; border-radius: 6px; padding: 0 8px; display: flex; align-items: center;">
+            <div style="font-size: 9px; color: #888;">My Pools</div>
+          </div>
+          <div style="height: 28px; border-radius: 6px; padding: 0 8px; display: flex; align-items: center;">
+            <div style="font-size: 9px; color: #888;">Notifications</div>
+          </div>
+        </div>
+        <!-- Pool list -->
+        <div style="width: 200px; background: #0f0f0f; border-left: 1px solid #222; border-right: 1px solid #222; padding: 12px; display: flex; flex-direction: column; gap: 6px;">
+          <div style="font-size: 10px; color: #888; margin-bottom: 4px;">My Pools</div>
+          <div style="height: 40px; border-radius: 6px; background: rgba(74,222,128,0.1); border: 1px solid rgba(74,222,128,0.3); padding: 6px;">
+            <div style="font-size: 9px; color: #4ade80;">Office Paluwagan</div>
+            <div style="font-size: 8px; color: #666;">Active · 8 members</div>
+          </div>
+          <div style="height: 40px; border-radius: 6px; background: #1a1a1a; border: 1px solid #2a2a2a; padding: 6px;">
+            <div style="font-size: 9px; color: #ccc;">Family Savings</div>
+            <div style="font-size: 8px; color: #666;">Draft · 3 members</div>
+          </div>
+          <div style="height: 40px; border-radius: 6px; background: #1a1a1a; border: 1px solid #2a2a2a; padding: 6px;">
+            <div style="font-size: 9px; color: #ccc;">Barkada Fund</div>
+            <div style="font-size: 8px; color: #666;">Active · 5 members</div>
+          </div>
+        </div>
+        <!-- Detail panel -->
+        <div style="flex: 1; background: #111; padding: 12px; display: flex; flex-direction: column; gap: 8px;">
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <div style="font-size: 12px; color: #fff; font-weight: 600;">Office Paluwagan</div>
+            <div style="font-size: 8px; color: #4ade80; background: rgba(74,222,128,0.15); padding: 2px 8px; border-radius: 10px;">Active</div>
+          </div>
+          <div style="display: flex; gap: 6px;">
+            <div style="flex:1; height: 40px; border-radius: 6px; background: #1a1a1a; border: 1px solid #2a2a2a;"></div>
+            <div style="flex:1; height: 40px; border-radius: 6px; background: #1a1a1a; border: 1px solid #2a2a2a;"></div>
+            <div style="flex:1; height: 40px; border-radius: 6px; background: #1a1a1a; border: 1px solid #2a2a2a;"></div>
+          </div>
+          <div style="flex:1; display: flex; gap: 6px;">
+            <div style="flex:1; border-radius: 6px; background: #1a1a1a; border: 1px solid #2a2a2a; padding: 6px;">
+              <div style="font-size: 8px; color: #888;">Members</div>
+            </div>
+            <div style="flex:1; border-radius: 6px; background: #1a1a1a; border: 1px solid #2a2a2a; padding: 6px;">
+              <div style="font-size: 8px; color: #888;">Schedule</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>A. Master-Detail (3 columns)</h3>
+      <p>Sidebar + pool list + detail panel. Click a pool in the list and the detail loads on the right — no page navigation. Like Slack or email clients.</p>
+    </div>
+  </div>
+
+  <div class="card" data-choice="b" onclick="toggleSelect(this)">
+    <div class="card-image" style="padding: 20px; background: #1a1a2e;">
+      <div style="display: flex; height: 280px; gap: 0; border-radius: 8px; overflow: hidden; border: 1px solid #333;">
+        <!-- Sidebar -->
+        <div style="width: 160px; background: #0d0d1a; padding: 16px; display: flex; flex-direction: column; gap: 4px;">
+          <div style="display: flex; align-items: center; gap: 6px; margin-bottom: 12px;">
+            <div style="width: 24px; height: 24px; border-radius: 50%; background: linear-gradient(135deg, #4ade80, #22c55e);"></div>
+            <div style="font-size: 10px; color: #fff; font-weight: 600;">MoneyGoRound</div>
+          </div>
+          <div style="height: 28px; border-radius: 6px; padding: 0 8px; display: flex; align-items: center;">
+            <div style="font-size: 9px; color: #888;">Dashboard</div>
+          </div>
+          <div style="height: 28px; border-radius: 6px; background: rgba(74,222,128,0.15); padding: 0 8px; display: flex; align-items: center;">
+            <div style="font-size: 9px; color: #4ade80;">Office Paluwagan</div>
+          </div>
+          <div style="height: 28px; border-radius: 6px; padding: 0 8px; display: flex; align-items: center;">
+            <div style="font-size: 9px; color: #888;">My Pools</div>
+          </div>
+          <div style="height: 28px; border-radius: 6px; padding: 0 8px; display: flex; align-items: center;">
+            <div style="font-size: 9px; color: #888;">Notifications</div>
+          </div>
+        </div>
+        <!-- Full width detail -->
+        <div style="flex: 1; background: #111; padding: 16px; display: flex; flex-direction: column; gap: 10px;">
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <div>
+              <div style="font-size: 14px; color: #fff; font-weight: 600;">Office Paluwagan</div>
+              <div style="font-size: 9px; color: #888;">8 members · ₱5,000/cycle · Biweekly</div>
+            </div>
+            <div style="display: flex; gap: 6px;">
+              <div style="font-size: 8px; color: #4ade80; background: rgba(74,222,128,0.15); padding: 2px 8px; border-radius: 10px;">Active</div>
+              <div style="width: 60px; height: 24px; border-radius: 6px; background: #1a1a1a; border: 1px solid #2a2a2a;"></div>
+            </div>
+          </div>
+          <!-- Tabs -->
+          <div style="display: flex; gap: 16px; border-bottom: 1px solid #2a2a2a; padding-bottom: 8px;">
+            <div style="font-size: 10px; color: #4ade80; border-bottom: 2px solid #4ade80; padding-bottom: 6px;">Overview</div>
+            <div style="font-size: 10px; color: #888;">Members</div>
+            <div style="font-size: 10px; color: #888;">Payments</div>
+            <div style="font-size: 10px; color: #888;">Schedule</div>
+            <div style="font-size: 10px; color: #888;">Announce</div>
+          </div>
+          <!-- Stats + content -->
+          <div style="display: flex; gap: 8px;">
+            <div style="flex:1; height: 55px; border-radius: 8px; background: #1a1a1a; border: 1px solid #2a2a2a;"></div>
+            <div style="flex:1; height: 55px; border-radius: 8px; background: #1a1a1a; border: 1px solid #2a2a2a;"></div>
+            <div style="flex:1; height: 55px; border-radius: 8px; background: #1a1a1a; border: 1px solid #2a2a2a;"></div>
+            <div style="flex:1; height: 55px; border-radius: 8px; background: #1a1a1a; border: 1px solid #2a2a2a;"></div>
+          </div>
+          <div style="flex:1; display: flex; gap: 8px;">
+            <div style="flex: 2; border-radius: 8px; background: #1a1a1a; border: 1px solid #2a2a2a; padding: 8px;">
+              <div style="font-size: 9px; color: #888;">Current Cycle</div>
+            </div>
+            <div style="flex: 1; border-radius: 8px; background: #1a1a1a; border: 1px solid #2a2a2a; padding: 8px;">
+              <div style="font-size: 9px; color: #888;">Members</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>B. Full-Page Detail with Tabs</h3>
+      <p>Clicking a pool navigates to a full-width detail page. Sidebar shows pool name as active. Sub-pages (members, payments, schedule) become tabs instead of separate pages.</p>
+    </div>
+  </div>
+</div>

@@ -84,7 +84,7 @@ export function DesktopPoolDetail({ poolId }: { poolId: string }) {
 
   if (!pool) {
     return (
-      <div className="p-8 max-w-[1000px] mx-auto">
+      <div className="p-8">
         <div className="animate-pulse space-y-4">
           <div className="h-8 bg-[#1a1a1a] rounded-lg w-48" />
           <div className="h-12 bg-[#1a1a1a] rounded-xl" />
@@ -150,7 +150,7 @@ export function DesktopPoolDetail({ poolId }: { poolId: string }) {
   }
 
   return (
-    <div className="p-8 max-w-[1000px] mx-auto">
+    <div className="p-8">
       {/* Delete confirmation modal */}
       {confirmDelete && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70">

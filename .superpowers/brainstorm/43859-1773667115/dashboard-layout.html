@@ -1,0 +1,163 @@
+<h2>Desktop Dashboard Layout</h2>
+<p class="subtitle">How should the desktop view be structured? The mobile view (430px) stays untouched.</p>
+
+<div class="cards">
+  <div class="card" data-choice="a" onclick="toggleSelect(this)">
+    <div class="card-image" style="padding: 20px; background: #1a1a2e;">
+      <div style="display: flex; height: 280px; gap: 0; border-radius: 8px; overflow: hidden; border: 1px solid #333;">
+        <!-- Sidebar -->
+        <div style="width: 60px; background: #0d0d1a; display: flex; flex-direction: column; align-items: center; padding: 16px 0; gap: 16px;">
+          <div style="width: 32px; height: 32px; border-radius: 50%; background: linear-gradient(135deg, #4ade80, #22c55e);"></div>
+          <div style="width: 24px; height: 24px; border-radius: 6px; background: #4ade80; opacity: 0.8;"></div>
+          <div style="width: 24px; height: 24px; border-radius: 6px; background: #333;"></div>
+          <div style="width: 24px; height: 24px; border-radius: 6px; background: #333;"></div>
+          <div style="width: 24px; height: 24px; border-radius: 6px; background: #333;"></div>
+          <div style="flex:1;"></div>
+          <div style="width: 28px; height: 28px; border-radius: 50%; background: #333;"></div>
+        </div>
+        <!-- Main content -->
+        <div style="flex: 1; background: #111; padding: 16px; display: flex; flex-direction: column; gap: 12px;">
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <div style="font-size: 14px; color: #fff; font-weight: 600;">Dashboard</div>
+            <div style="width: 80px; height: 28px; border-radius: 6px; background: linear-gradient(135deg, #4ade80, #22c55e);"></div>
+          </div>
+          <!-- Stats row -->
+          <div style="display: flex; gap: 8px;">
+            <div style="flex:1; height: 50px; border-radius: 8px; background: #1a1a1a; border: 1px solid #2a2a2a;"></div>
+            <div style="flex:1; height: 50px; border-radius: 8px; background: #1a1a1a; border: 1px solid #2a2a2a;"></div>
+            <div style="flex:1; height: 50px; border-radius: 8px; background: #1a1a1a; border: 1px solid #2a2a2a;"></div>
+          </div>
+          <!-- Content grid -->
+          <div style="display: flex; gap: 8px; flex: 1;">
+            <div style="flex: 2; border-radius: 8px; background: #1a1a1a; border: 1px solid #2a2a2a; padding: 8px;">
+              <div style="font-size: 9px; color: #888; margin-bottom: 6px;">My Pools</div>
+              <div style="height: 16px; background: #222; border-radius: 4px; margin-bottom: 4px;"></div>
+              <div style="height: 16px; background: #222; border-radius: 4px; margin-bottom: 4px;"></div>
+              <div style="height: 16px; background: #222; border-radius: 4px;"></div>
+            </div>
+            <div style="flex: 1; display: flex; flex-direction: column; gap: 8px;">
+              <div style="flex:1; border-radius: 8px; background: #1a1a1a; border: 1px solid #2a2a2a; padding: 8px;">
+                <div style="font-size: 9px; color: #888;">Notifications</div>
+              </div>
+              <div style="flex:1; border-radius: 8px; background: #1a1a1a; border: 1px solid #2a2a2a; padding: 8px;">
+                <div style="font-size: 9px; color: #888;">Schedule</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>A. Icon Sidebar + Dashboard Grid</h3>
+      <p>Slim icon sidebar for navigation. Main area uses a grid layout showing pools, notifications, and schedule all at once. Compact, app-like feel.</p>
+    </div>
+  </div>
+
+  <div class="card" data-choice="b" onclick="toggleSelect(this)">
+    <div class="card-image" style="padding: 20px; background: #1a1a2e;">
+      <div style="display: flex; height: 280px; gap: 0; border-radius: 8px; overflow: hidden; border: 1px solid #333;">
+        <!-- Wide sidebar -->
+        <div style="width: 180px; background: #0d0d1a; padding: 16px; display: flex; flex-direction: column; gap: 4px;">
+          <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 12px;">
+            <div style="width: 28px; height: 28px; border-radius: 50%; background: linear-gradient(135deg, #4ade80, #22c55e);"></div>
+            <div style="font-size: 11px; color: #fff; font-weight: 600;">MoneyGoRound</div>
+          </div>
+          <div style="height: 32px; border-radius: 6px; background: rgba(74,222,128,0.15); padding: 0 8px; display: flex; align-items: center;">
+            <div style="font-size: 10px; color: #4ade80;">Dashboard</div>
+          </div>
+          <div style="height: 32px; border-radius: 6px; padding: 0 8px; display: flex; align-items: center;">
+            <div style="font-size: 10px; color: #888;">My Pools</div>
+          </div>
+          <div style="height: 32px; border-radius: 6px; padding: 0 8px; display: flex; align-items: center;">
+            <div style="font-size: 10px; color: #888;">Notifications</div>
+          </div>
+          <div style="height: 32px; border-radius: 6px; padding: 0 8px; display: flex; align-items: center;">
+            <div style="font-size: 10px; color: #888;">Profile</div>
+          </div>
+          <div style="flex:1;"></div>
+          <div style="display: flex; align-items: center; gap: 6px; padding: 8px 0;">
+            <div style="width: 24px; height: 24px; border-radius: 50%; background: #333;"></div>
+            <div style="font-size: 9px; color: #888;">User Name</div>
+          </div>
+        </div>
+        <!-- Main content -->
+        <div style="flex: 1; background: #111; padding: 16px; display: flex; flex-direction: column; gap: 12px;">
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <div>
+              <div style="font-size: 14px; color: #fff; font-weight: 600;">Welcome back!</div>
+              <div style="font-size: 10px; color: #888;">March 16, 2026</div>
+            </div>
+            <div style="width: 100px; height: 28px; border-radius: 6px; background: linear-gradient(135deg, #4ade80, #22c55e);"></div>
+          </div>
+          <div style="display: flex; gap: 8px;">
+            <div style="flex:1; height: 60px; border-radius: 8px; background: #1a1a1a; border: 1px solid #2a2a2a;"></div>
+            <div style="flex:1; height: 60px; border-radius: 8px; background: #1a1a1a; border: 1px solid #2a2a2a;"></div>
+            <div style="flex:1; height: 60px; border-radius: 8px; background: #1a1a1a; border: 1px solid #2a2a2a;"></div>
+            <div style="flex:1; height: 60px; border-radius: 8px; background: #1a1a1a; border: 1px solid #2a2a2a;"></div>
+          </div>
+          <div style="flex: 1; display: flex; gap: 8px;">
+            <div style="flex: 1; border-radius: 8px; background: #1a1a1a; border: 1px solid #2a2a2a; padding: 8px;">
+              <div style="font-size: 9px; color: #888; margin-bottom: 6px;">Active Pools</div>
+              <div style="height: 20px; background: #222; border-radius: 4px; margin-bottom: 4px;"></div>
+              <div style="height: 20px; background: #222; border-radius: 4px; margin-bottom: 4px;"></div>
+            </div>
+            <div style="flex: 1; border-radius: 8px; background: #1a1a1a; border: 1px solid #2a2a2a; padding: 8px;">
+              <div style="font-size: 9px; color: #888; margin-bottom: 6px;">Recent Activity</div>
+              <div style="height: 12px; background: #222; border-radius: 4px; margin-bottom: 4px;"></div>
+              <div style="height: 12px; background: #222; border-radius: 4px; margin-bottom: 4px;"></div>
+              <div style="height: 12px; background: #222; border-radius: 4px;"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>B. Full Sidebar + Content Area</h3>
+      <p>Wide sidebar with labeled nav items and user profile. Main area is a classic dashboard with stats and content panels. Spacious, traditional SaaS feel.</p>
+    </div>
+  </div>
+
+  <div class="card" data-choice="c" onclick="toggleSelect(this)">
+    <div class="card-image" style="padding: 20px; background: #1a1a2e;">
+      <div style="display: flex; flex-direction: column; height: 280px; gap: 0; border-radius: 8px; overflow: hidden; border: 1px solid #333;">
+        <!-- Top nav -->
+        <div style="height: 48px; background: #0d0d1a; display: flex; align-items: center; padding: 0 16px; gap: 20px; border-bottom: 1px solid #222;">
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <div style="width: 24px; height: 24px; border-radius: 50%; background: linear-gradient(135deg, #4ade80, #22c55e);"></div>
+            <div style="font-size: 11px; color: #fff; font-weight: 600;">MoneyGoRound</div>
+          </div>
+          <div style="display: flex; gap: 16px; flex: 1;">
+            <div style="font-size: 10px; color: #4ade80;">Dashboard</div>
+            <div style="font-size: 10px; color: #888;">My Pools</div>
+            <div style="font-size: 10px; color: #888;">Notifications</div>
+          </div>
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <div style="width: 80px; height: 26px; border-radius: 6px; background: linear-gradient(135deg, #4ade80, #22c55e);"></div>
+            <div style="width: 28px; height: 28px; border-radius: 50%; background: #333;"></div>
+          </div>
+        </div>
+        <!-- Content -->
+        <div style="flex: 1; background: #111; padding: 16px; display: flex; flex-direction: column; gap: 12px;">
+          <div style="font-size: 14px; color: #fff; font-weight: 600;">Welcome back!</div>
+          <div style="display: flex; gap: 8px;">
+            <div style="flex:1; height: 55px; border-radius: 8px; background: #1a1a1a; border: 1px solid #2a2a2a;"></div>
+            <div style="flex:1; height: 55px; border-radius: 8px; background: #1a1a1a; border: 1px solid #2a2a2a;"></div>
+            <div style="flex:1; height: 55px; border-radius: 8px; background: #1a1a1a; border: 1px solid #2a2a2a;"></div>
+          </div>
+          <div style="flex: 1; display: flex; gap: 8px;">
+            <div style="flex: 2; border-radius: 8px; background: #1a1a1a; border: 1px solid #2a2a2a; padding: 8px;">
+              <div style="font-size: 9px; color: #888;">Pools Overview</div>
+            </div>
+            <div style="flex: 1; border-radius: 8px; background: #1a1a1a; border: 1px solid #2a2a2a; padding: 8px;">
+              <div style="font-size: 9px; color: #888;">Activity</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>C. Top Navigation Bar + Content</h3>
+      <p>Horizontal nav bar at the top. Maximizes vertical content space. Clean, modern feel — similar to Notion or Linear. Content fills the full width below.</p>
+    </div>
+  </div>
+</div>
