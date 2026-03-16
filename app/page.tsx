@@ -3,7 +3,8 @@
 import { useQuery, useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { useCurrentUser } from "@/hooks/useCurrentUser";
-import { MobileContainer } from "@/components/layout/MobileContainer";
+import { ResponsiveLayout } from "@/components/layout/ResponsiveLayout";
+import { DashboardView } from "@/components/desktop/DashboardView";
 import { PoolCard } from "@/components/pool/PoolCard";
 import { StatCard } from "@/components/ui/StatCard";
 import { GreenButton } from "@/components/ui/GreenButton";
@@ -75,9 +76,10 @@ export default function Dashboard() {
   }
 
   return (
-    <MobileContainer>
+    <>
       {/* ── Signed-out: full landing screen ── */}
       <Show when="signed-out">
+        <ResponsiveLayout showSidebar={false}>
         <div className="flex-1 flex flex-col relative overflow-hidden">
           {/* Atmospheric glow */}
           <div
@@ -201,10 +203,12 @@ export default function Dashboard() {
             </p>
           </div>
         </div>
+        </ResponsiveLayout>
       </Show>
 
       {/* ── Signed-in: dashboard ── */}
       <Show when="signed-in">
+        <ResponsiveLayout desktopContent={<DashboardView />}>
         <div className="flex-1 overflow-y-auto">
           <div className="px-4 pt-12 pb-6">
             {/* Greeting */}
@@ -353,7 +357,8 @@ export default function Dashboard() {
             )}
           </div>
         </div>
+        </ResponsiveLayout>
       </Show>
-    </MobileContainer>
+    </>
   );
 }
