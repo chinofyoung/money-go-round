@@ -64,6 +64,9 @@ export function MembersContent({ poolId }: { poolId: string }) {
   const members = useQuery(api.members.listByPool, { poolId: poolId as Id<"pools"> });
 
   const [localOrder, setLocalOrder] = useState<typeof members | null>(null);
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 8 } })
+  );
 
   const isOrganizer = convexUser?._id === pool?.organizerId;
   const canReorder = isOrganizer && pool?.orderType === "assigned" && pool?.status === "draft";
@@ -77,10 +80,6 @@ export function MembersContent({ poolId }: { poolId: string }) {
     .filter((m) => m.status === "active")
     .sort((a, b) => (a.payoutPosition ?? 0) - (b.payoutPosition ?? 0));
   const invitedMembers = displayed.filter((m) => m.status === "invited");
-
-  const sensors = useSensors(
-    useSensor(PointerSensor, { activationConstraint: { distance: 8 } })
-  );
 
   function handleDragEnd(event: DragEndEvent) {
     const { active, over } = event;
