@@ -3,7 +3,8 @@
 import { useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { useCurrentUser } from "@/hooks/useCurrentUser";
-import { MobileContainer } from "@/components/layout/MobileContainer";
+import { ResponsiveLayout } from "@/components/layout/ResponsiveLayout";
+import { DesktopPoolsGrid } from "@/components/desktop/DesktopPoolsGrid";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { PoolCard } from "@/components/pool/PoolCard";
 import { GreenButton } from "@/components/ui/GreenButton";
@@ -23,15 +24,15 @@ export default function MyPoolsPage() {
 
   if (poolData === undefined) {
     return (
-      <MobileContainer>
+      <ResponsiveLayout desktopContent={<DesktopPoolsGrid />}>
         <PageHeader title="My Pools" showBack={false} />
         <MyPoolsSkeleton />
-        </MobileContainer>
+      </ResponsiveLayout>
     );
   }
 
   return (
-    <MobileContainer>
+    <ResponsiveLayout desktopContent={<DesktopPoolsGrid />}>
       <PageHeader title="My Pools" showBack={false} />
 
       <div className="flex-1 overflow-y-auto px-4 pt-4 space-y-4">
@@ -100,6 +101,6 @@ export default function MyPoolsPage() {
         )}
       </div>
 
-    </MobileContainer>
+    </ResponsiveLayout>
   );
 }
