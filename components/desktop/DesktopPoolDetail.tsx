@@ -1,0 +1,467 @@
+"use client";
+
+import { useQuery, useMutation } from "convex/react";
+import { api } from "@/convex/_generated/api";
+import { useCurrentUser } from "@/hooks/useCurrentUser";
+import { useRouter, useSearchParams } from "next/navigation";
+import { CycleCard } from "@/components/pool/CycleCard";
+import { MemberRow } from "@/components/pool/MemberRow";
+import { StatCard } from "@/components/ui/StatCard";
+import { StatusBadge } from "@/components/ui/StatusBadge";
+import { GreenButton } from "@/components/ui/GreenButton";
+import { MembersContent } from "@/components/pool/MembersContent";
+import { PaymentsContent } from "@/components/pool/PaymentsContent";
+import { ScheduleContent } from "@/components/pool/ScheduleContent";
+import { AnnounceContent } from "@/components/pool/AnnounceContent";
+import { formatCurrency, formatDate, SCHEDULE_LABELS } from "@/lib/format";
+import Link from "next/link";
+import { useState } from "react";
+import { Id } from "@/convex/_generated/dataModel";
+import { Pencil, Trash2, Calendar, ChevronRight } from "lucide-react";
+import toast from "react-hot-toast";
+
+const TABS = [
+  { key: "overview", label: "Overview" },
+  { key: "members", label: "Members" },
+  { key: "payments", label: "Payments" },
+  { key: "schedule", label: "Schedule" },
+  { key: "announcements", label: "Announcements" },
+] as const;
+
+type TabKey = (typeof TABS)[number]["key"];
+
+function computeEndDate(
+  startDate: number,
+  schedule: string,
+  numMembers: number
+): number {
+  const date = new Date(startDate);
+  const i = numMembers - 1;
+  if (schedule === "weekly") date.setDate(date.getDate() + i * 7);
+  else if (schedule === "biweekly") date.setDate(date.getDate() + i * 14);
+  else if (schedule === "mid_month") {
+    date.setMonth(date.getMonth() + i);
+    date.setDate(15);
+  } else if (schedule === "end_of_month") {
+    date.setMonth(date.getMonth() + i + 1);
+    date.setDate(0);
+  }
+  return date.getTime();
+}
+
+function toDateInputValue(ts: number) {
+  return new Date(ts).toISOString().split("T")[0];
+}
+
+export function DesktopPoolDetail({ poolId }: { poolId: string }) {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const activeTab = (searchParams.get("tab") as TabKey) || "overview";
+  const { convexUser } = useCurrentUser();
+
+  const pool = useQuery(api.pools.getById, {
+    poolId: poolId as Id<"pools">,
+  });
+  const members = useQuery(api.members.listByPool, {
+    poolId: poolId as Id<"pools">,
+  });
+  const currentCycle = useQuery(api.cycles.getCurrentCycle, {
+    poolId: poolId as Id<"pools">,
+  });
+  const cyclePayments = useQuery(
+    api.payments.listByCycle,
+    currentCycle ? { cycleId: currentCycle._id } : "skip"
+  );
+
+  const activate = useMutation(api.pools.activate);
+  const removePool = useMutation(api.pools.remove);
+  const [confirmDelete, setConfirmDelete] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+
+  const today = toDateInputValue(Date.now());
+  const [startDateInput, setStartDateInput] = useState(today);
+  const [starting, setStarting] = useState(false);
+
+  if (!pool) {
+    return (
+      <div className="p-8 max-w-[1000px] mx-auto">
+        <div className="animate-pulse space-y-4">
+          <div className="h-8 bg-[#1a1a1a] rounded-lg w-48" />
+          <div className="h-12 bg-[#1a1a1a] rounded-xl" />
+          <div className="h-64 bg-[#1a1a1a] rounded-xl" />
+        </div>
+      </div>
+    );
+  }
+
+  const isOrganizer = convexUser?._id === pool.organizerId;
+  const activeMembers = members?.filter((m) => m.status === "active") ?? [];
+  const paidCount =
+    cyclePayments?.filter((p) => p.confirmedByOrganizer).length ?? 0;
+  const recipient = currentCycle
+    ? members?.find((m) => m._id === currentCycle.recipientMemberId)
+    : null;
+  const myMember = members?.find((m) => m.userId === convexUser?._id);
+  const isRecipient = myMember?._id === currentCycle?.recipientMemberId;
+  const myPayment = cyclePayments?.find((p) => p.memberId === myMember?._id);
+
+  const startTs = new Date(startDateInput).getTime();
+  const memberCount =
+    pool.status === "draft" ? activeMembers.length : pool.maxMembers;
+  const organizerIsMember = activeMembers.some(
+    (m) => m.userId === pool.organizerId
+  );
+  const payingCount = memberCount - (organizerIsMember ? 1 : 0);
+  const endDate = computeEndDate(startTs, pool.payoutSchedule, memberCount);
+
+  async function handleStart() {
+    setStarting(true);
+    try {
+      await activate({
+        poolId: poolId as Id<"pools">,
+        startDate: startTs,
+      });
+      toast.success("Pool started!");
+    } catch (err: unknown) {
+      toast.error(
+        err instanceof Error ? err.message : "Failed to start pool"
+      );
+    } finally {
+      setStarting(false);
+    }
+  }
+
+  async function handleDelete() {
+    setDeleting(true);
+    try {
+      await removePool({ poolId: poolId as Id<"pools"> });
+      toast.success("Pool deleted");
+      router.replace("/my-pools");
+    } catch {
+      toast.error("Failed to delete pool.");
+    } finally {
+      setDeleting(false);
+      setConfirmDelete(false);
+    }
+  }
+
+  function setTab(tab: TabKey) {
+    router.replace(`/pool/${poolId}?tab=${tab}`, { scroll: false });
+  }
+
+  return (
+    <div className="p-8 max-w-[1000px] mx-auto">
+      {/* Delete confirmation modal */}
+      {confirmDelete && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70">
+          <div className="bg-[#141414] border border-[#2a2a2a] rounded-2xl p-5 w-full max-w-sm space-y-4">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-full bg-red-500/10 flex items-center justify-center shrink-0">
+                <Trash2 size={18} className="text-red-400" />
+              </div>
+              <div>
+                <p className="text-sm font-semibold text-white">
+                  Delete this pool?
+                </p>
+                <p className="text-xs text-[#6b7280]">
+                  This permanently deletes all data.
+                </p>
+              </div>
+            </div>
+            <div className="flex gap-3">
+              <button
+                onClick={() => setConfirmDelete(false)}
+                className="flex-1 h-11 rounded-xl border border-[#2a2a2a] text-white text-sm font-medium"
+              >
+                Cancel
+              </button>
+              <button
+                disabled={deleting}
+                onClick={handleDelete}
+                className="flex-1 h-11 rounded-xl bg-red-500 text-white text-sm font-semibold disabled:opacity-50"
+              >
+                {deleting ? "Deleting..." : "Delete"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Header */}
+      <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center gap-4">
+          <h1 className="text-2xl font-bold text-white">{pool.name}</h1>
+          <StatusBadge status={pool.status} />
+        </div>
+        {isOrganizer && (
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setConfirmDelete(true)}
+              className="flex items-center justify-center w-9 h-9 rounded-full bg-white/5 hover:bg-white/10 transition-colors"
+            >
+              <Trash2 size={16} className="text-red-400" />
+            </button>
+            <Link
+              href={`/pool/${poolId}/edit`}
+              className="flex items-center justify-center w-9 h-9 rounded-full bg-white/5 hover:bg-white/10 transition-colors"
+            >
+              <Pencil size={16} className="text-[#6b7280]" />
+            </Link>
+          </div>
+        )}
+      </div>
+
+      {/* Tab bar */}
+      <div
+        className="flex gap-1 border-b border-[#2a2a2a] mb-6"
+        role="tablist"
+      >
+        {TABS.map(({ key, label }) => (
+          <button
+            key={key}
+            role="tab"
+            aria-selected={activeTab === key}
+            onClick={() => setTab(key)}
+            className={`px-4 py-2.5 text-sm font-medium transition-colors relative ${
+              activeTab === key
+                ? "text-[#4ade80]"
+                : "text-[#6b7280] hover:text-white"
+            }`}
+          >
+            {label}
+            {activeTab === key && (
+              <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#4ade80]" />
+            )}
+          </button>
+        ))}
+      </div>
+
+      {/* Tab content */}
+      <div role="tabpanel">
+        {activeTab === "overview" && (
+          <div className="space-y-4">
+            {/* Stats */}
+            <div className="bg-[#141414] border border-[#2a2a2a] rounded-2xl p-5">
+              <div className="grid grid-cols-4 gap-4">
+                <StatCard
+                  label="Per cycle"
+                  value={formatCurrency(
+                    pool.contributionAmount,
+                    pool.currency
+                  )}
+                />
+                <StatCard
+                  label="Total pot"
+                  value={formatCurrency(
+                    pool.contributionAmount * payingCount,
+                    pool.currency
+                  )}
+                />
+                <StatCard
+                  label="Schedule"
+                  value={SCHEDULE_LABELS[pool.payoutSchedule]}
+                />
+                <StatCard
+                  label="Members"
+                  value={`${activeMembers.length}`}
+                />
+              </div>
+              <div className="flex justify-between text-xs pt-3 mt-3 border-t border-[#2a2a2a]">
+                <span className="text-[#6b7280]">Verifies payments</span>
+                <span className="text-white capitalize">
+                  {pool.paymentVerifier === "recipient"
+                    ? "Cycle recipient"
+                    : "Organizer"}
+                </span>
+              </div>
+              {pool.startDate && (
+                <div className="flex justify-between text-xs pt-3 mt-3 border-t border-[#2a2a2a]">
+                  <span className="text-[#6b7280]">Starts</span>
+                  <span className="text-white">
+                    {formatDate(pool.startDate)}
+                  </span>
+                  <span className="text-[#6b7280]">Ends</span>
+                  <span className="text-white">
+                    {formatDate(
+                      computeEndDate(
+                        pool.startDate,
+                        pool.payoutSchedule,
+                        memberCount
+                      )
+                    )}
+                  </span>
+                </div>
+              )}
+            </div>
+
+            {/* Current cycle */}
+            {pool.status === "active" && currentCycle && recipient && (
+              <div className="space-y-3">
+                <CycleCard
+                  cycleNumber={currentCycle.cycleNumber}
+                  totalCycles={memberCount}
+                  recipientName={recipient.displayName ?? ""}
+                  recipientEmail={recipient.email}
+                  payoutDate={currentCycle.payoutDate}
+                  totalAmount={currentCycle.totalAmount}
+                  currency={pool.currency}
+                  paidCount={paidCount}
+                  totalMembers={activeMembers.length - 1}
+                />
+
+                {/* Action banners */}
+                {isRecipient ? (
+                  <div className="bg-[#4ade80]/10 border border-[#4ade80]/30 rounded-2xl p-4 flex items-center gap-3">
+                    <span className="text-xl">🎉</span>
+                    <div>
+                      <p className="text-sm font-semibold text-[#4ade80]">
+                        You&apos;re receiving this cycle!
+                      </p>
+                      <p className="text-xs text-[#6b7280]">
+                        No payment needed — you&apos;ll receive the pot on{" "}
+                        {formatDate(currentCycle.payoutDate)}.
+                      </p>
+                    </div>
+                  </div>
+                ) : myPayment?.status === "pending" ? (
+                  <button
+                    onClick={() => setTab("payments")}
+                    className="w-full flex items-center gap-3 bg-[#4ade80] rounded-2xl p-4 hover:bg-[#3bcb6e] transition-colors"
+                  >
+                    <span className="text-xl">💸</span>
+                    <div className="flex-1 min-w-0 text-left">
+                      <p className="text-sm font-bold text-black">Pay Now</p>
+                      <p className="text-xs text-black/60">
+                        Upload your{" "}
+                        {formatCurrency(
+                          pool.contributionAmount,
+                          pool.currency
+                        )}{" "}
+                        payment proof
+                      </p>
+                    </div>
+                    <ChevronRight size={20} className="text-black/40" />
+                  </button>
+                ) : myPayment?.status === "paid" &&
+                  !myPayment.confirmedByOrganizer ? (
+                  <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-2xl p-4 flex items-center gap-3">
+                    <span className="text-xl">⏳</span>
+                    <div>
+                      <p className="text-sm font-semibold text-yellow-400">
+                        Payment submitted
+                      </p>
+                      <p className="text-xs text-[#6b7280]">
+                        Waiting for organizer to confirm.
+                      </p>
+                    </div>
+                  </div>
+                ) : myPayment?.confirmedByOrganizer ? (
+                  <div className="bg-[#4ade80]/10 border border-[#4ade80]/30 rounded-2xl p-4 flex items-center gap-3">
+                    <span className="text-xl">✅</span>
+                    <p className="text-sm text-[#4ade80]">
+                      Your payment has been confirmed.
+                    </p>
+                  </div>
+                ) : null}
+              </div>
+            )}
+
+            {/* Draft state — organizer */}
+            {pool.status === "draft" && isOrganizer && (
+              <div className="bg-[#141414] border border-[#2a2a2a] rounded-2xl p-5 space-y-4 max-w-lg">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-[#6b7280]">
+                    {activeMembers.length} members joined
+                  </span>
+                  <Link
+                    href={`/pool/${poolId}/invite`}
+                    className="text-xs text-[#4ade80]"
+                  >
+                    + Invite
+                  </Link>
+                </div>
+                <div>
+                  <label className="text-xs text-[#6b7280] mb-1.5 block">
+                    Start date
+                  </label>
+                  <div className="relative rounded-xl border border-[#2a2a2a] bg-[#0a0a0a] overflow-hidden focus-within:border-[#4ade80]">
+                    <Calendar
+                      size={16}
+                      className="absolute left-4 top-1/2 -translate-y-1/2 text-[#6b7280] pointer-events-none"
+                    />
+                    <input
+                      type="date"
+                      value={startDateInput}
+                      onChange={(e) => setStartDateInput(e.target.value)}
+                      className="w-full bg-transparent rounded-xl pl-10 pr-4 py-2.5 text-white text-sm outline-none [color-scheme:dark]"
+                    />
+                  </div>
+                </div>
+                <div className="flex justify-between text-xs text-[#6b7280] bg-[#0a0a0a] rounded-xl px-4 py-2.5">
+                  <span>Estimated end date</span>
+                  <span className="text-white font-medium">
+                    {formatDate(endDate)}
+                  </span>
+                </div>
+                <GreenButton
+                  fullWidth
+                  disabled={starting || activeMembers.length < 2}
+                  onClick={handleStart}
+                >
+                  {starting ? "Starting..." : "Start Pool"}
+                </GreenButton>
+                {activeMembers.length < 2 && (
+                  <p className="text-xs text-[#6b7280] text-center">
+                    Need at least 2 members to start
+                  </p>
+                )}
+              </div>
+            )}
+
+            {/* Draft state — non-organizer */}
+            {pool.status === "draft" && !isOrganizer && (
+              <div className="bg-[#141414] border border-[#2a2a2a] rounded-2xl p-4 text-center">
+                <p className="text-sm text-[#6b7280]">
+                  {activeMembers.length} members joined
+                </p>
+              </div>
+            )}
+
+            {/* Members preview */}
+            {activeMembers.length > 0 && (
+              <div>
+                <div className="flex items-center justify-between mb-3">
+                  <h3 className="text-sm font-semibold text-white">Members</h3>
+                  <button
+                    onClick={() => setTab("members")}
+                    className="text-xs text-[#4ade80] hover:underline"
+                  >
+                    See all
+                  </button>
+                </div>
+                <div className="bg-[#141414] border border-[#2a2a2a] rounded-2xl px-4 divide-y divide-[#2a2a2a]">
+                  {activeMembers.slice(0, 4).map((member) => (
+                    <MemberRow
+                      key={member._id}
+                      name={member.displayName ?? ""}
+                      email={member.email}
+                      status={member.status}
+                      isRecipient={
+                        member._id === currentCycle?.recipientMemberId
+                      }
+                    />
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
+        {activeTab === "members" && <MembersContent poolId={poolId} />}
+        {activeTab === "payments" && <PaymentsContent poolId={poolId} />}
+        {activeTab === "schedule" && <ScheduleContent poolId={poolId} />}
+        {activeTab === "announcements" && <AnnounceContent poolId={poolId} />}
+      </div>
+    </div>
+  );
+}
