@@ -17,7 +17,7 @@ Add a desktop dashboard view to the MoneyGoRound ROSCA/paluwagan app. The existi
 | Dashboard panels | All 6: stats, pools, actions, notifications, schedule, invites | Rich comprehensive dashboard |
 | Dashboard arrangement | Two-column with right panel | Main content left, secondary info (invites, schedule, activity) right |
 | Breakpoint | 1024px (lg) | Below = mobile (unchanged), above = desktop |
-| Implementation | New files only, no modifications to existing mobile components | Guarantees mobile stays untouched |
+| Implementation | Additive new files + minimal page wrappers | Mobile component files unchanged; page files get thin responsive wrappers |
 
 ## Architecture
 
@@ -32,8 +32,38 @@ Add a desktop dashboard view to the MoneyGoRound ROSCA/paluwagan app. The existi
 ```
 
 - `ResponsiveLayout` wraps page content, replacing direct `MobileContainer` usage in each page
-- Uses CSS media query + `useIsDesktop()` hook for conditional rendering
+- Uses a **CSS-first approach** for the layout shell to avoid hydration flash (see below)
+- `useIsDesktop()` hook used for conditional content rendering (not the shell itself)
 - On desktop, `MobileContainer` and `BottomNav` are not rendered at all
+
+**Hydration flash mitigation:** The outer shell uses CSS `hidden lg:flex` / `lg:hidden` classes so the correct layout renders immediately without waiting for JS hydration. The `useIsDesktop` hook is only used for conditional content inside components (e.g., rendering `DashboardView` vs mobile pool list), not for the shell structure itself.
+
+**Integration with auth state:** `ResponsiveLayout` accepts a `showSidebar` prop. Signed-out pages pass `showSidebar={false}` — the desktop shell renders without the sidebar, just a centered max-width container. Signed-in pages pass `showSidebar={true}`.
+
+**Example integration in `app/page.tsx`:**
+```tsx
+export default function Home() {
+  return (
+    <>
+      <Show when="signed-out">
+        <ResponsiveLayout showSidebar={false}>
+          {/* Landing page — same content, just wider on desktop */}
+          <LandingContent />
+        </ResponsiveLayout>
+      </Show>
+      <Show when="signed-in">
+        <ResponsiveLayout showSidebar={true}>
+          {/* On mobile: existing pool list. On desktop: DashboardView */}
+          <DesktopOnly><DashboardView /></DesktopOnly>
+          <MobileOnly><MobilePoolList /></MobileOnly>
+        </ResponsiveLayout>
+      </Show>
+    </>
+  );
+}
+```
+
+`DesktopOnly` and `MobileOnly` are thin wrappers using CSS `hidden lg:block` / `lg:hidden` to avoid hydration issues.
 
 ### useIsDesktop Hook
 
@@ -41,7 +71,8 @@ Add a desktop dashboard view to the MoneyGoRound ROSCA/paluwagan app. The existi
 // hooks/useIsDesktop.ts
 // Returns true when viewport ≥ 1024px
 // Uses window.matchMedia for SSR-safe media query detection
-// Default: false (mobile-first, avoids layout flash)
+// Default: false (mobile-first)
+// Used for: conditional data fetching, dynamic content — NOT for layout shell
 ```
 
 ### Desktop Sidebar
@@ -56,8 +87,14 @@ Add a desktop dashboard view to the MoneyGoRound ROSCA/paluwagan app. The existi
 - Notification badge: unread count (orange dot, same as BottomNav)
 - User profile section (bottom): avatar + name, sign out action
 
+**Icons** (matching BottomNav for consistency):
+- Dashboard: `Home` (lucide-react)
+- My Pools: `Wallet` (lucide-react)
+- Notifications: `Bell` (lucide-react)
+- Profile: `User` (lucide-react)
+
 **Styling:**
-- Background: `#0d0d1a`
+- Background: `#0a0a0a` (consistent with existing palette)
 - Full viewport height, fixed position
 - Border-right: `1px solid #2a2a2a`
 
@@ -95,12 +132,21 @@ Add a desktop dashboard view to the MoneyGoRound ROSCA/paluwagan app. The existi
 
 6. **Activity feed** — recent events: payments submitted, members joined, announcements posted, with relative timestamps
 
-**Data sources:** All from existing Convex queries — no backend changes needed:
-- `api.pools.listMyPools` — pool list
-- `api.pools.getPoolStats` (or computed client-side) — stats
-- `api.notifications.list` — activity/notifications
-- `api.invitations.listPending` — invitations
-- `api.cycles.getUpcoming` (or computed from pool data) — schedule
+**Data sources** — all derived from existing Convex queries (no new backend queries):
+
+| Panel | Convex Query | Derivation |
+|-------|-------------|------------|
+| Pools grid | `api.pools.listForUser` | Direct — returns all user's pools |
+| Stats: Active pools | `api.pools.listForUser` | Count pools with `status === "active"` |
+| Stats: Monthly total | `api.pools.listForUser` | Sum `amount` for active pools (adjusted by frequency) |
+| Stats: Next payout | `api.cycles.getCurrentCycle` | Call per active pool, find earliest upcoming date |
+| Stats: Total members | `api.members.listByPool` | Call per pool, sum counts. Cap at first 5 pools to limit queries |
+| Action items | `api.notifications.listForUser` | Filter for actionable types (payment_due, payment_review) |
+| Invitations | `api.notifications.getPendingInvites` | Direct — returns pending invites |
+| Schedule | `api.cycles.listByPool` | Call per active pool, merge and sort by date. Cap at 5 pools |
+| Activity feed | `api.notifications.listForUser` | Same as notifications — recent items displayed as feed |
+
+**N+1 query note:** Stats and schedule require per-pool queries (`getCurrentCycle`, `listByPool`, `members.listByPool`). To keep this manageable, cap at the first 5 active pools. If the user has more, show "and N more pools..." with a link to My Pools. Convex's reactive queries handle this efficiently since they only re-run when data changes.
 
 ### Desktop Pool Detail
 
@@ -111,12 +157,26 @@ Add a desktop dashboard view to the MoneyGoRound ROSCA/paluwagan app. The existi
 - Horizontal tab bar: Overview | Members | Payments | Schedule | Announcements
 - Tab content area (full width below tabs)
 
-**Tab behavior:**
-- Tabs replace the mobile pattern of separate page routes (`/pool/[id]/members`, etc.)
-- On mobile, these remain separate pages with `PageHeader` back navigation (unchanged)
-- On desktop, clicking a tab switches content without page navigation
-- URL updates to reflect active tab (e.g., `/pool/[id]/members`) for shareability
-- Direct URL navigation works — loads the correct tab
+**Tab routing strategy:** Use `?tab=members` search params (not sub-route interception).
+
+- Clicking a tab calls `router.replace(/pool/[id]?tab=members)` — no full page navigation
+- Default (no `?tab`) shows Overview
+- On mobile, sub-route pages (`/pool/[id]/members/page.tsx`) remain unchanged
+- On desktop, sub-route pages redirect to the tabbed view: if `useIsDesktop()` is true, `router.replace(/pool/[id]?tab=members)` immediately
+
+**Tab content mapping:**
+
+| Tab | Content Source | Notes |
+|-----|---------------|-------|
+| Overview | Current pool detail page content | Stats, cycle card, action banners, member preview |
+| Members | Content from `app/pool/[id]/members/page.tsx` | Member list with drag-and-drop (reuse existing logic, minus MobileContainer/PageHeader wrapper) |
+| Payments | Content from `app/pool/[id]/payments/page.tsx` | Payment list and submission |
+| Schedule | Content from `app/pool/[id]/schedule/page.tsx` | Payout timeline |
+| Announcements | Content from `app/pool/[id]/announce/page.tsx` | Announcement feed |
+
+To reuse tab content without duplicating code, extract the inner content of each sub-page into a shared component (e.g., `components/pool/MembersContent.tsx`). Both the mobile sub-page and the desktop tab import this component. The mobile page wraps it in `MobileContainer` + `PageHeader`; the desktop tab renders it directly.
+
+**Accessibility:** Tab bar uses `role="tablist"`, each tab uses `role="tab"` with `aria-selected`, content area uses `role="tabpanel"`. Arrow keys navigate between tabs.
 
 **Overview tab content (default):**
 - Stats row: Status, Per-cycle amount, Total pot, Schedule (4 columns)
@@ -158,6 +218,8 @@ components/
   layout/
     ResponsiveLayout.tsx    # NEW — switches mobile/desktop shell
     Sidebar.tsx             # NEW — desktop sidebar navigation
+    DesktopOnly.tsx         # NEW — CSS wrapper, hidden below lg
+    MobileOnly.tsx          # NEW — CSS wrapper, hidden at lg+
     MobileContainer.tsx     # UNCHANGED
     BottomNav.tsx           # UNCHANGED
     PageHeader.tsx          # UNCHANGED
@@ -165,24 +227,35 @@ components/
     DashboardView.tsx       # NEW — desktop home dashboard
     DesktopPoolDetail.tsx   # NEW — tabbed pool detail wrapper
     DesktopPoolsGrid.tsx    # NEW — grid layout for my-pools
+  pool/
+    MembersContent.tsx      # NEW — extracted from members/page.tsx (shared)
+    PaymentsContent.tsx     # NEW — extracted from payments/page.tsx (shared)
+    ScheduleContent.tsx     # NEW — extracted from schedule/page.tsx (shared)
+    AnnounceContent.tsx     # NEW — extracted from announce/page.tsx (shared)
 hooks/
   useIsDesktop.ts           # NEW — media query hook (≥1024px)
 ```
 
-**Modified files (minimal changes):**
+**Modified files (minimal changes — wrapping with ResponsiveLayout):**
 - `app/page.tsx` — wrap with `ResponsiveLayout`, render `DashboardView` on desktop
 - `app/my-pools/page.tsx` — wrap with `ResponsiveLayout`, render grid on desktop
 - `app/pool/[id]/page.tsx` — wrap with `ResponsiveLayout`, render tabbed detail on desktop
+- `app/pool/[id]/members/page.tsx` — extract content to `MembersContent`, wrap with `ResponsiveLayout`, redirect to tabbed view on desktop
+- `app/pool/[id]/payments/page.tsx` — extract content to `PaymentsContent`, wrap with `ResponsiveLayout`, redirect to tabbed view on desktop
+- `app/pool/[id]/schedule/page.tsx` — extract content to `ScheduleContent`, wrap with `ResponsiveLayout`, redirect to tabbed view on desktop
+- `app/pool/[id]/announce/page.tsx` — extract content to `AnnounceContent`, wrap with `ResponsiveLayout`, redirect to tabbed view on desktop
+- `app/pool/[id]/edit/page.tsx` — wrap with `ResponsiveLayout`
+- `app/pool/[id]/invite/page.tsx` — wrap with `ResponsiveLayout`
 - `app/notifications/page.tsx` — wrap with `ResponsiveLayout`
 - `app/profile/page.tsx` — wrap with `ResponsiveLayout`
 - `app/pool/new/page.tsx` — wrap with `ResponsiveLayout`
+- `app/join/[token]/page.tsx` — wrap with `ResponsiveLayout` (showSidebar=false)
 
 **Existing files with zero changes:**
 - `components/layout/MobileContainer.tsx`
 - `components/layout/BottomNav.tsx`
 - `components/layout/PageHeader.tsx`
 - All `components/ui/*` components
-- All `components/pool/*` components
 - All `convex/*` backend files
 - `hooks/useCurrentUser.ts`
 
@@ -197,16 +270,28 @@ Follows existing design system:
 - Interactive: `active:scale-[0.98]` press feedback
 - Tailwind CSS classes throughout (consistent with mobile)
 
+## Loading States
+
+Desktop components need their own skeleton states since the layout differs from mobile:
+
+- **DashboardView:** Skeleton with placeholder stat cards, pool card placeholders, and right panel placeholders
+- **DesktopPoolDetail:** Skeleton with tab bar placeholder and content area shimmer
+- **DesktopPoolsGrid:** Grid of PoolCard skeleton placeholders
+
+Reuse the existing `Skeleton` component (`components/ui/Skeleton.tsx`) as the building block.
+
 ## Edge Cases
 
-- **SSR hydration:** `useIsDesktop` defaults to `false` (mobile-first) to avoid layout mismatch. Desktop shell renders after hydration.
+- **SSR hydration:** Layout shell uses CSS-only `hidden lg:flex` / `lg:hidden` — no flash. `useIsDesktop` hook used only for content-level decisions, defaults to `false`.
 - **Window resize:** Hook listens to resize events, layout switches live if user resizes browser.
-- **Deep links:** `/pool/[id]/members` on desktop should open the pool detail with Members tab active.
-- **Landing page (signed out):** Desktop shows the same landing page but with more horizontal space — centered with max-width, no sidebar.
+- **Deep links:** `/pool/[id]/members` on desktop redirects to `/pool/[id]?tab=members` via `useIsDesktop` check.
+- **Landing page (signed out):** `ResponsiveLayout` renders with `showSidebar={false}` — no sidebar, centered max-width container on desktop.
+- **Toast positioning:** `react-hot-toast` Toaster stays `top-center` — it centers on the viewport which works for both layouts. Can adjust to content-area-relative positioning in a follow-up if needed.
 
 ## Out of Scope
 
-- Backend/Convex changes — all data available via existing queries
+- Backend/Convex changes — all data derived from existing queries
 - Mobile UI changes — explicitly excluded
 - New features — this is purely a layout/presentation change
 - Dark/light theme toggle — stays dark only
+- Viewport zoom constraints — existing `maximumScale: 1` remains as-is
