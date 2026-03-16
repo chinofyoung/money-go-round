@@ -3,7 +3,7 @@
 import { useQuery, useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { useCurrentUser } from "@/hooks/useCurrentUser";
-import { MobileContainer } from "@/components/layout/MobileContainer";
+import { ResponsiveLayout } from "@/components/layout/ResponsiveLayout";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { formatRelativeTime } from "@/lib/format";
 import { Bell } from "lucide-react";
@@ -73,7 +73,7 @@ export default function NotificationsPage() {
   }
 
   return (
-    <MobileContainer>
+    <ResponsiveLayout>
       <PageHeader
         title="Notifications"
         showBack={false}
@@ -180,6 +180,6 @@ export default function NotificationsPage() {
         )}
       </div>
 
-    </MobileContainer>
+    </ResponsiveLayout>
   );
 }

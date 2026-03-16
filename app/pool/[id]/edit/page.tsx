@@ -2,7 +2,7 @@
 
 import { useQuery, useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
-import { MobileContainer } from "@/components/layout/MobileContainer";
+import { ResponsiveLayout } from "@/components/layout/ResponsiveLayout";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { GreenButton } from "@/components/ui/GreenButton";
 import { Id } from "@/convex/_generated/dataModel";
@@ -85,20 +85,20 @@ export default function EditPoolPage({
 
   if (!pool) {
     return (
-      <MobileContainer>
+      <ResponsiveLayout>
         <PageHeader title="Edit Pool" />
         <EditPoolSkeleton />
         <div className="px-4 py-4 border-t border-[#2a2a2a]">
           <Skeleton className="h-12 w-full rounded-full" />
         </div>
-      </MobileContainer>
+      </ResponsiveLayout>
     );
   }
 
   const isDraft = pool?.status === "draft";
 
   return (
-    <MobileContainer>
+    <ResponsiveLayout>
       <PageHeader title="Edit Pool" />
 
       <div className="flex-1 overflow-y-auto px-4 py-4 space-y-4">
@@ -206,6 +206,6 @@ export default function EditPoolPage({
           {loading ? "Saving…" : "Save Changes"}
         </GreenButton>
       </div>
-    </MobileContainer>
+    </ResponsiveLayout>
   );
 }

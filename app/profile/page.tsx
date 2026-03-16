@@ -1,7 +1,7 @@
 "use client";
 
 import { useCurrentUser } from "@/hooks/useCurrentUser";
-import { MobileContainer } from "@/components/layout/MobileContainer";
+import { ResponsiveLayout } from "@/components/layout/ResponsiveLayout";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { Avatar } from "@/components/ui/Avatar";
 import { GreenButton } from "@/components/ui/GreenButton";
@@ -151,17 +151,17 @@ export default function ProfilePage() {
 
   if (!convexUser) {
     return (
-      <MobileContainer>
+      <ResponsiveLayout>
         <PageHeader title="Profile" showBack={false} />
         <ProfileSkeleton />
-        </MobileContainer>
+        </ResponsiveLayout>
     );
   }
 
   const providers = form.type === "ewallet" ? EWALLET_PROVIDERS : BANK_PROVIDERS;
 
   return (
-    <MobileContainer>
+    <ResponsiveLayout>
       <PageHeader title="Profile" showBack={false} />
 
       <div className="flex-1 overflow-y-auto px-4 space-y-4 pt-4 pb-4">
@@ -458,6 +458,6 @@ export default function ProfilePage() {
         </SignOutButton>
       </div>
 
-    </MobileContainer>
+    </ResponsiveLayout>
   );
 }

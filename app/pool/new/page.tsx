@@ -4,7 +4,7 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { useMutation, useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { useCurrentUser } from "@/hooks/useCurrentUser";
-import { MobileContainer } from "@/components/layout/MobileContainer";
+import { ResponsiveLayout } from "@/components/layout/ResponsiveLayout";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { GreenButton } from "@/components/ui/GreenButton";
 import { useRouter } from "next/navigation";
@@ -130,7 +130,7 @@ export default function NewPoolPage() {
   const step2Valid = true;
 
   return (
-    <MobileContainer>
+    <ResponsiveLayout>
       <PageHeader
         title="Create Pool"
         action={
@@ -398,6 +398,6 @@ export default function NewPoolPage() {
         )}
       </div>
 
-    </MobileContainer>
+    </ResponsiveLayout>
   );
 }

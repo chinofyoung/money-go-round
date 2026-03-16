@@ -3,7 +3,7 @@
 import { useQuery, useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { useCurrentUser } from "@/hooks/useCurrentUser";
-import { MobileContainer } from "@/components/layout/MobileContainer";
+import { ResponsiveLayout } from "@/components/layout/ResponsiveLayout";
 import { GreenButton } from "@/components/ui/GreenButton";
 import { StatusBadge } from "@/components/ui/StatusBadge";
 import { SignInButton } from "@clerk/nextjs";
@@ -63,15 +63,15 @@ export default function JoinPage({
 
   if (data === undefined) {
     return (
-      <MobileContainer>
+      <ResponsiveLayout showSidebar={false}>
         <JoinPageSkeleton />
-      </MobileContainer>
+      </ResponsiveLayout>
     );
   }
 
   if (!data || !data.pool) {
     return (
-      <MobileContainer>
+      <ResponsiveLayout showSidebar={false}>
         <div className="flex-1 flex flex-col items-center justify-center gap-4 px-8">
           <p className="text-2xl">🔗</p>
           <h1 className="text-xl font-bold text-white text-center">
@@ -81,7 +81,7 @@ export default function JoinPage({
             This link may have expired or already been used.
           </p>
         </div>
-      </MobileContainer>
+      </ResponsiveLayout>
     );
   }
 
@@ -90,7 +90,7 @@ export default function JoinPage({
   const isFinalized = invitation.status === "accepted" || invitation.status === "declined";
 
   return (
-    <MobileContainer>
+    <ResponsiveLayout showSidebar={false}>
       <div className="flex-1 overflow-y-auto pb-8 px-4 pt-16">
         <div className="text-center mb-8">
           <p className="text-[#6b7280] text-sm mb-1">You're invited to join</p>
@@ -181,6 +181,6 @@ export default function JoinPage({
           </div>
         )}
       </div>
-    </MobileContainer>
+    </ResponsiveLayout>
   );
 }

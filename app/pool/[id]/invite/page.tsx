@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useMutation, useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
-import { MobileContainer } from "@/components/layout/MobileContainer";
+import { ResponsiveLayout } from "@/components/layout/ResponsiveLayout";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { Id } from "@/convex/_generated/dataModel";
 import { use } from "react";
@@ -78,7 +78,7 @@ export default function InvitePage({
   }
 
   return (
-    <MobileContainer>
+    <ResponsiveLayout>
       <PageHeader title="Invite Members" />
 
       <div className="flex-1 overflow-y-auto px-4 pt-4 pb-4 space-y-4">
@@ -153,6 +153,6 @@ export default function InvitePage({
           Back to Home
         </Link>
       </div>
-    </MobileContainer>
+    </ResponsiveLayout>
   );
 }
