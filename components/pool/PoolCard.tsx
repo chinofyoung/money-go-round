@@ -14,6 +14,7 @@ interface PoolCardProps {
   payoutSchedule: string;
   isOrganizer?: boolean;
   organizerIsMember?: boolean;
+  recipientEarnings?: { paidCount: number; totalPayingMembers: number };
 }
 
 const scheduleLabel: Record<string, string> = {
@@ -34,6 +35,7 @@ export function PoolCard({
   payoutSchedule,
   isOrganizer,
   organizerIsMember = false,
+  recipientEarnings,
 }: PoolCardProps) {
   const progress = maxMembers > 0 ? (currentCycle / maxMembers) * 100 : 0;
 
@@ -76,6 +78,27 @@ export function PoolCard({
             </span>
           </div>
         </>
+      )}
+
+      {recipientEarnings && (
+        <div className="mt-3 pt-3 border-t border-[#2a2a2a]">
+          <div className="flex items-center gap-1.5 mb-2">
+            <span className="text-xs">🎉</span>
+            <span className="text-xs font-medium text-[#4ade80]">You&apos;re receiving this cycle</span>
+          </div>
+          <div className="flex justify-between text-xs">
+            <span className="text-[#6b7280]">Received</span>
+            <span className="text-[#4ade80] font-semibold">
+              {formatCurrency(recipientEarnings.paidCount * contributionAmount, currency)}
+            </span>
+          </div>
+          <div className="flex justify-between text-xs mt-1">
+            <span className="text-[#6b7280]">Remaining</span>
+            <span className="text-white font-semibold">
+              {formatCurrency((recipientEarnings.totalPayingMembers - recipientEarnings.paidCount) * contributionAmount, currency)}
+            </span>
+          </div>
+        </div>
       )}
     </Link>
   );

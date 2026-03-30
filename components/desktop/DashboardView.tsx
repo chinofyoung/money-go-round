@@ -216,6 +216,7 @@ export function DashboardView() {
                       maxMembers={r.maxMembers}
                       payoutSchedule={r.payoutSchedule}
                       organizerIsMember={r.organizerIsMember}
+                      recipientEarnings={r.recipientEarnings}
                     />
                   ) : null
                 )}

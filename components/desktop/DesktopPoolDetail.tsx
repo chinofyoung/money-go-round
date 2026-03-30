@@ -18,6 +18,7 @@ import Link from "next/link";
 import { useState } from "react";
 import { Id } from "@/convex/_generated/dataModel";
 import { Pencil, Trash2, Calendar, ChevronRight } from "lucide-react";
+import { RecipientEarningsCard } from "@/components/pool/RecipientEarningsCard";
 import toast from "react-hot-toast";
 
 const TABS = [
@@ -311,18 +312,26 @@ export function DesktopPoolDetail({ poolId }: { poolId: string }) {
 
                 {/* Action banners */}
                 {isRecipient ? (
-                  <div className="bg-[#4ade80]/10 border border-[#4ade80]/30 rounded-2xl p-4 flex items-center gap-3">
-                    <span className="text-xl">🎉</span>
-                    <div>
-                      <p className="text-sm font-semibold text-[#4ade80]">
-                        You&apos;re receiving this cycle!
-                      </p>
-                      <p className="text-xs text-[#6b7280]">
-                        No payment needed — you&apos;ll receive the pot on{" "}
-                        {formatDate(currentCycle.payoutDate)}.
-                      </p>
+                  <>
+                    <div className="bg-[#4ade80]/10 border border-[#4ade80]/30 rounded-2xl p-4 flex items-center gap-3">
+                      <span className="text-xl">🎉</span>
+                      <div>
+                        <p className="text-sm font-semibold text-[#4ade80]">
+                          You&apos;re receiving this cycle!
+                        </p>
+                        <p className="text-xs text-[#6b7280]">
+                          No payment needed — you&apos;ll receive the pot on{" "}
+                          {formatDate(currentCycle.payoutDate)}.
+                        </p>
+                      </div>
                     </div>
-                  </div>
+                    <RecipientEarningsCard
+                      paidCount={paidCount}
+                      totalMembers={activeMembers.length - 1}
+                      contributionAmount={pool.contributionAmount}
+                      currency={pool.currency}
+                    />
+                  </>
                 ) : myPayment?.status === "pending" ? (
                   <button
                     onClick={() => setTab("payments")}

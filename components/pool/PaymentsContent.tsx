@@ -8,6 +8,7 @@ import { CycleCard } from "@/components/pool/CycleCard";
 import { PaymentRow } from "@/components/pool/PaymentRow";
 import { GreenButton } from "@/components/ui/GreenButton";
 import { PaymentsPageSkeleton } from "@/components/ui/Skeleton";
+import { RecipientEarningsCard } from "@/components/pool/RecipientEarningsCard";
 import { Id } from "@/convex/_generated/dataModel";
 import toast from "react-hot-toast";
 
@@ -112,15 +113,23 @@ export function PaymentsContent({ poolId }: PaymentsContentProps) {
             />
           )}
 
-          {/* Recipient banner */}
+          {/* Recipient banner + earnings */}
           {isRecipient && (
-            <div className="bg-[#4ade80]/10 border border-[#4ade80]/30 rounded-2xl p-4 flex items-center gap-3">
-              <span className="text-xl">🎉</span>
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-semibold text-[#4ade80]">You&apos;re receiving this cycle!</p>
-                <p className="text-xs text-[#6b7280]">No payment needed this round.</p>
+            <>
+              <div className="bg-[#4ade80]/10 border border-[#4ade80]/30 rounded-2xl p-4 flex items-center gap-3">
+                <span className="text-xl">🎉</span>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-semibold text-[#4ade80]">You&apos;re receiving this cycle!</p>
+                  <p className="text-xs text-[#6b7280]">No payment needed this round.</p>
+                </div>
               </div>
-            </div>
+              <RecipientEarningsCard
+                paidCount={paidCount}
+                totalMembers={activeMembers.length - 1}
+                contributionAmount={pool.contributionAmount}
+                currency={pool.currency}
+              />
+            </>
           )}
 
           {/* Payment accounts — show to payers */}

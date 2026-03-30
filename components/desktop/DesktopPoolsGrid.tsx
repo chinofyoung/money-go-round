@@ -51,6 +51,7 @@ export function DesktopPoolsGrid() {
                   payoutSchedule={r.payoutSchedule}
                   isOrganizer
                   organizerIsMember={r.organizerIsMember}
+                  recipientEarnings={r.recipientEarnings}
                 />
               ) : null
             )}
@@ -77,6 +78,7 @@ export function DesktopPoolsGrid() {
                   maxMembers={r.maxMembers}
                   payoutSchedule={r.payoutSchedule}
                   organizerIsMember={r.organizerIsMember}
+                  recipientEarnings={r.recipientEarnings}
                 />
               ) : null
             )}

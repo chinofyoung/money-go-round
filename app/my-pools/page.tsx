@@ -56,6 +56,7 @@ export default function MyPoolsPage() {
                     payoutSchedule={r.payoutSchedule}
                     isOrganizer
                     organizerIsMember={r.organizerIsMember}
+                    recipientEarnings={r.recipientEarnings}
                   />
                 ) : null
               )}
@@ -82,6 +83,7 @@ export default function MyPoolsPage() {
                     maxMembers={r.maxMembers}
                     payoutSchedule={r.payoutSchedule}
                     organizerIsMember={r.organizerIsMember}
+                    recipientEarnings={r.recipientEarnings}
                   />
                 ) : null
               )}

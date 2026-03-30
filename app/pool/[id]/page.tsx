@@ -16,9 +16,10 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { use, useState } from "react";
 import { Id } from "@/convex/_generated/dataModel";
-import { Users, Calendar, MessageSquare, ChevronRight, Pencil, Trash2 } from "lucide-react";
+import { Users, Calendar, MessageSquare, CreditCard, ChevronRight, Pencil, Trash2 } from "lucide-react";
 import toast from "react-hot-toast";
 import { PoolDetailSkeleton } from "@/components/ui/Skeleton";
+import { RecipientEarningsCard } from "@/components/pool/RecipientEarningsCard";
 
 function computeEndDate(
   startDate: number,
@@ -125,6 +126,7 @@ export default function PoolDetailPage({
 
   const quickLinks = [
     { href: `members`, label: "Members", icon: Users, count: activeMembers.length },
+    { href: `payments`, label: "Payments", icon: CreditCard },
     { href: `schedule`, label: "Schedule", icon: Calendar, count: memberCount },
     { href: `announce`, label: "Announcements", icon: MessageSquare },
   ];
@@ -248,13 +250,21 @@ export default function PoolDetailPage({
 
             {/* Action banner */}
             {isRecipient ? (
-              <div className="bg-[#4ade80]/10 border border-[#4ade80]/30 rounded-2xl p-4 flex items-center gap-3">
-                <span className="text-xl">🎉</span>
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-semibold text-[#4ade80]">You&apos;re receiving this cycle!</p>
-                  <p className="text-xs text-[#6b7280]">No payment needed — you&apos;ll receive the pot on {formatDate(currentCycle.payoutDate)}.</p>
+              <>
+                <div className="bg-[#4ade80]/10 border border-[#4ade80]/30 rounded-2xl p-4 flex items-center gap-3">
+                  <span className="text-xl">🎉</span>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-semibold text-[#4ade80]">You&apos;re receiving this cycle!</p>
+                    <p className="text-xs text-[#6b7280]">No payment needed — you&apos;ll receive the pot on {formatDate(currentCycle.payoutDate)}.</p>
+                  </div>
                 </div>
-              </div>
+                <RecipientEarningsCard
+                  paidCount={paidCount}
+                  totalMembers={activeMembers.length - 1}
+                  contributionAmount={pool.contributionAmount}
+                  currency={pool.currency}
+                />
+              </>
             ) : myPayment?.status === "pending" ? (
               <Link
                 href={`/pool/${id}/payments`}

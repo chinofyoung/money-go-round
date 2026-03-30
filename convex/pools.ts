@@ -102,27 +102,54 @@ export const listForUser = query({
         .map((id) => ctx.db.get(id))
     );
 
-    // For each pool, determine whether the organizer joined as a paying member
-    const organizedWithFlag = await Promise.all(
-      organized.map(async (pool) => {
-        const organizerMember = await ctx.db
-          .query("pool_members")
-          .withIndex("by_user", (q) => q.eq("userId", pool.organizerId))
-          .filter((q) => q.eq(q.field("poolId"), pool._id))
-          .first();
-        return { ...pool, organizerIsMember: organizerMember !== null };
-      })
-    );
+    // Helper: enrich a pool with organizer-as-member flag and recipient earnings
+    async function enrichPool(pool: NonNullable<Awaited<ReturnType<typeof ctx.db.get>>>) {
+      const organizerMember = await ctx.db
+        .query("pool_members")
+        .withIndex("by_user", (q) => q.eq("userId", pool.organizerId))
+        .filter((q) => q.eq(q.field("poolId"), pool._id))
+        .first();
+
+      let recipientEarnings: { paidCount: number; totalPayingMembers: number } | undefined;
+
+      if (pool.status === "active") {
+        const currentCycle = await ctx.db
+          .query("payment_cycles")
+          .withIndex("by_pool", (q) => q.eq("poolId", pool._id))
+          .filter((q) => q.eq(q.field("status"), "current"))
+          .unique();
+
+        if (currentCycle) {
+          // Find the user's member record in this pool
+          const userMember = await ctx.db
+            .query("pool_members")
+            .withIndex("by_user", (q) => q.eq("userId", args.userId))
+            .filter((q) => q.eq(q.field("poolId"), pool._id))
+            .first();
+
+          if (userMember && currentCycle.recipientMemberId === userMember._id) {
+            const payments = await ctx.db
+              .query("member_payments")
+              .withIndex("by_cycle", (q) => q.eq("cycleId", currentCycle._id))
+              .collect();
+
+            // Exclude the recipient's own payment record
+            const otherPayments = payments.filter((p) => p.memberId !== userMember._id);
+            const paidCount = otherPayments.filter((p) => p.confirmedByOrganizer).length;
+            recipientEarnings = { paidCount, totalPayingMembers: otherPayments.length };
+          }
+        }
+      }
+
+      return { ...pool, organizerIsMember: organizerMember !== null, recipientEarnings };
+    }
+
+    const organizedWithFlag = await Promise.all(organized.map(enrichPool));
 
     const memberPoolsWithFlag = await Promise.all(
       memberPools.filter(Boolean).map(async (pool) => {
         if (!pool) return null;
-        const organizerMember = await ctx.db
-          .query("pool_members")
-          .withIndex("by_user", (q) => q.eq("userId", pool.organizerId))
-          .filter((q) => q.eq(q.field("poolId"), pool._id))
-          .first();
-        return { ...pool, organizerIsMember: organizerMember !== null };
+        return enrichPool(pool);
       })
     );
 
