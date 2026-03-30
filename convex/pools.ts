@@ -1,5 +1,6 @@
 import { v } from "convex/values";
 import { mutation, query } from "./_generated/server";
+import { Doc } from "./_generated/dataModel";
 
 export const create = mutation({
   args: {
@@ -103,7 +104,7 @@ export const listForUser = query({
     );
 
     // Helper: enrich a pool with organizer-as-member flag and recipient earnings
-    async function enrichPool(pool: NonNullable<Awaited<ReturnType<typeof ctx.db.get>>>) {
+    async function enrichPool(pool: Doc<"pools">) {
       const organizerMember = await ctx.db
         .query("pool_members")
         .withIndex("by_user", (q) => q.eq("userId", pool.organizerId))
