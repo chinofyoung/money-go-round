@@ -194,14 +194,16 @@ export function PaymentsContent({ poolId }: PaymentsContentProps) {
             </div>
           )}
 
-          {/* All payments (verifier view) */}
-          {isVerifier && cyclePayments && members && (
+          {/* All payments (visible to all members) */}
+          {cyclePayments && members && (
             <div>
               <p className="text-xs text-[#6b7280] font-medium uppercase tracking-wider mb-2">
                 All Contributions
               </p>
               <div className="bg-[#141414] border border-[#2a2a2a] rounded-2xl px-4">
-                {cyclePayments.map((payment) => {
+                {cyclePayments
+                  .filter((payment) => payment.memberId !== currentCycle?.recipientMemberId)
+                  .map((payment) => {
                   const member = members.find((m) => m._id === payment.memberId);
                   if (!member) return null;
                   return (
