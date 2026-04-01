@@ -92,12 +92,19 @@ export const confirmPayment = mutation({
     }
 
     // Check if all payments in this cycle are confirmed → advance cycle
+    const cycleForCheck = await ctx.db.get(payment.cycleId);
     const allPayments = await ctx.db
       .query("member_payments")
       .withIndex("by_cycle", (q) => q.eq("cycleId", payment.cycleId))
       .collect();
 
-    const allConfirmed = allPayments.every((p) =>
+    // Exclude the recipient's own payment (they don't pay themselves)
+    const recipientMemberId = cycleForCheck?.recipientMemberId;
+    const relevantPayments = allPayments.filter(
+      (p) => p.memberId !== recipientMemberId
+    );
+
+    const allConfirmed = relevantPayments.every((p) =>
       p._id === args.paymentId ? true : p.confirmedByOrganizer
     );
 
@@ -116,9 +123,67 @@ export const confirmPayment = mutation({
         if (nextCycle) {
           await ctx.db.patch(nextCycle._id, { status: "current" });
           await ctx.db.patch(cycle.poolId, { currentCycle: cycle.cycleNumber + 1 });
+
+          // Notify all active members that the cycle advanced
+          if (pool) {
+            const activeMembers = await ctx.db
+              .query("pool_members")
+              .withIndex("by_pool", (q) => q.eq("poolId", cycle.poolId))
+              .filter((q) => q.eq(q.field("status"), "active"))
+              .collect();
+
+            const advanceMessage = `Cycle ${cycle.cycleNumber} of "${pool.name}" is complete. Cycle ${nextCycle.cycleNumber} has started.`;
+            for (const m of activeMembers) {
+              if (m.userId) {
+                await ctx.db.insert("notifications", {
+                  userId: m.userId,
+                  type: "cycle_advanced",
+                  message: advanceMessage,
+                  poolId: cycle.poolId,
+                  read: false,
+                  createdAt: Date.now(),
+                });
+              }
+            }
+
+            // Notify the next cycle's recipient
+            const recipient = await ctx.db.get(nextCycle.recipientMemberId);
+            if (recipient?.userId) {
+              await ctx.db.insert("notifications", {
+                userId: recipient.userId,
+                type: "payout_upcoming",
+                message: `You are the recipient for Cycle ${nextCycle.cycleNumber} of "${pool.name}". Payments will be sent to you this cycle.`,
+                poolId: cycle.poolId,
+                read: false,
+                createdAt: Date.now(),
+              });
+            }
+          }
         } else {
           // All cycles done
           await ctx.db.patch(cycle.poolId, { status: "completed" });
+
+          // Notify all active members that the pool is complete
+          if (pool) {
+            const activeMembers = await ctx.db
+              .query("pool_members")
+              .withIndex("by_pool", (q) => q.eq("poolId", cycle.poolId))
+              .filter((q) => q.eq(q.field("status"), "active"))
+              .collect();
+
+            for (const m of activeMembers) {
+              if (m.userId) {
+                await ctx.db.insert("notifications", {
+                  userId: m.userId,
+                  type: "payout_received",
+                  message: `"${pool.name}" has been completed! All cycles are done.`,
+                  poolId: cycle.poolId,
+                  read: false,
+                  createdAt: Date.now(),
+                });
+              }
+            }
+          }
         }
       }
     }

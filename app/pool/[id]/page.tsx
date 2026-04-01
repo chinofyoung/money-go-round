@@ -16,7 +16,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { use, useState } from "react";
 import { Id } from "@/convex/_generated/dataModel";
-import { Users, Calendar, MessageSquare, CreditCard, ChevronRight, Pencil, Trash2 } from "lucide-react";
+import { Users, Calendar, MessageSquare, CreditCard, ChevronRight, Pencil, Trash2, SkipForward } from "lucide-react";
 import toast from "react-hot-toast";
 import { PoolDetailSkeleton } from "@/components/ui/Skeleton";
 import { RecipientEarningsCard } from "@/components/pool/RecipientEarningsCard";
@@ -56,8 +56,11 @@ export default function PoolDetailPage({
   const { convexUser } = useCurrentUser();
   const activate = useMutation(api.pools.activate);
   const removePool = useMutation(api.pools.remove);
+  const advanceCycle = useMutation(api.cycles.advanceCycle);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [confirmAdvance, setConfirmAdvance] = useState(false);
+  const [advancing, setAdvancing] = useState(false);
 
   const pool= useQuery(api.pools.getById, { poolId: id as Id<"pools"> });
   const members = useQuery(api.members.listByPool, { poolId: id as Id<"pools"> });
@@ -107,6 +110,20 @@ export default function PoolDetailPage({
       toast.error(err instanceof Error ? err.message : "Failed to start pool");
     } finally {
       setStarting(false);
+    }
+  }
+
+  async function handleAdvanceCycle() {
+    if (!convexUser || !pool) return;
+    setAdvancing(true);
+    try {
+      await advanceCycle({ poolId: pool._id, organizerId: convexUser._id });
+      toast.success("Moved to next cycle!");
+      setConfirmAdvance(false);
+    } catch {
+      toast.error("Failed to advance cycle.");
+    } finally {
+      setAdvancing(false);
     }
   }
 
@@ -183,6 +200,37 @@ export default function PoolDetailPage({
                 className="flex-1 h-11 rounded-xl bg-red-500 text-white text-sm font-semibold disabled:opacity-50"
               >
                 {deleting ? "Deleting..." : "Delete"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {confirmAdvance && (
+        <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/70 px-8">
+          <div className="bg-[#141414] border border-[#2a2a2a] rounded-2xl p-5 w-full max-w-sm space-y-4">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-full bg-[#4ade80]/10 flex items-center justify-center shrink-0">
+                <SkipForward size={18} className="text-[#4ade80]" />
+              </div>
+              <div>
+                <p className="text-sm font-semibold text-white">Move to next cycle?</p>
+                <p className="text-xs text-[#6b7280]">This will complete the current cycle and advance to the next one. This action cannot be undone.</p>
+              </div>
+            </div>
+            <div className="flex gap-3">
+              <button
+                onClick={() => setConfirmAdvance(false)}
+                className="flex-1 h-11 rounded-xl border border-[#2a2a2a] text-white text-sm font-medium"
+              >
+                Cancel
+              </button>
+              <button
+                disabled={advancing}
+                onClick={handleAdvanceCycle}
+                className="flex-1 h-11 rounded-xl bg-gradient-to-r from-[#4ade80] to-[#22c55e] text-black text-sm font-semibold disabled:opacity-50"
+              >
+                {advancing ? "Moving..." : "Confirm"}
               </button>
             </div>
           </div>
@@ -293,6 +341,16 @@ export default function PoolDetailPage({
                 <p className="text-sm text-[#4ade80]">Your payment has been confirmed.</p>
               </div>
             ) : null}
+
+            {(isOrganizer || isRecipient) && (
+              <button
+                onClick={() => setConfirmAdvance(true)}
+                className="w-full flex items-center justify-center gap-2 h-12 rounded-2xl bg-gradient-to-r from-[#4ade80]/10 to-[#22c55e]/10 border border-[#4ade80]/30 text-sm font-semibold text-[#4ade80] active:scale-[0.98] transition-all"
+              >
+                <SkipForward size={18} />
+                Move to Next Cycle
+              </button>
+            )}
           </div>
         )}
 

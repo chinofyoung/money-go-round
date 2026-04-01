@@ -17,7 +17,7 @@ import { formatCurrency, formatDate, SCHEDULE_LABELS } from "@/lib/format";
 import Link from "next/link";
 import { useState } from "react";
 import { Id } from "@/convex/_generated/dataModel";
-import { Pencil, Trash2, Calendar, ChevronRight } from "lucide-react";
+import { Pencil, Trash2, Calendar, ChevronRight, SkipForward } from "lucide-react";
 import { RecipientEarningsCard } from "@/components/pool/RecipientEarningsCard";
 import toast from "react-hot-toast";
 
@@ -76,8 +76,11 @@ export function DesktopPoolDetail({ poolId }: { poolId: string }) {
 
   const activate = useMutation(api.pools.activate);
   const removePool = useMutation(api.pools.remove);
+  const advanceCycle = useMutation(api.cycles.advanceCycle);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [confirmAdvance, setConfirmAdvance] = useState(false);
+  const [advancing, setAdvancing] = useState(false);
 
   const today = toDateInputValue(Date.now());
   const [startDateInput, setStartDateInput] = useState(today);
@@ -132,6 +135,20 @@ export function DesktopPoolDetail({ poolId }: { poolId: string }) {
     }
   }
 
+  async function handleAdvanceCycle() {
+    if (!convexUser || !pool) return;
+    setAdvancing(true);
+    try {
+      await advanceCycle({ poolId: pool._id, organizerId: convexUser._id });
+      toast.success("Moved to next cycle!");
+      setConfirmAdvance(false);
+    } catch {
+      toast.error("Failed to advance cycle.");
+    } finally {
+      setAdvancing(false);
+    }
+  }
+
   async function handleDelete() {
     setDeleting(true);
     try {
@@ -182,6 +199,38 @@ export function DesktopPoolDetail({ poolId }: { poolId: string }) {
                 className="flex-1 h-11 rounded-xl bg-red-500 text-white text-sm font-semibold disabled:opacity-50"
               >
                 {deleting ? "Deleting..." : "Delete"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Advance cycle confirmation modal */}
+      {confirmAdvance && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70">
+          <div className="bg-[#141414] border border-[#2a2a2a] rounded-2xl p-5 w-full max-w-sm space-y-4">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-full bg-[#4ade80]/10 flex items-center justify-center shrink-0">
+                <SkipForward size={18} className="text-[#4ade80]" />
+              </div>
+              <div>
+                <p className="text-sm font-semibold text-white">Move to next cycle?</p>
+                <p className="text-xs text-[#6b7280]">This will complete the current cycle and advance to the next one. This action cannot be undone.</p>
+              </div>
+            </div>
+            <div className="flex gap-3">
+              <button
+                onClick={() => setConfirmAdvance(false)}
+                className="flex-1 h-11 rounded-xl border border-[#2a2a2a] text-white text-sm font-medium"
+              >
+                Cancel
+              </button>
+              <button
+                disabled={advancing}
+                onClick={handleAdvanceCycle}
+                className="flex-1 h-11 rounded-xl bg-gradient-to-r from-[#4ade80] to-[#22c55e] text-black text-sm font-semibold disabled:opacity-50"
+              >
+                {advancing ? "Moving..." : "Confirm"}
               </button>
             </div>
           </div>
@@ -372,6 +421,16 @@ export function DesktopPoolDetail({ poolId }: { poolId: string }) {
                     </p>
                   </div>
                 ) : null}
+
+                {(isOrganizer || isRecipient) && (
+                  <button
+                    onClick={() => setConfirmAdvance(true)}
+                    className="w-full flex items-center justify-center gap-2 h-12 rounded-2xl bg-gradient-to-r from-[#4ade80]/10 to-[#22c55e]/10 border border-[#4ade80]/30 text-sm font-semibold text-[#4ade80] hover:from-[#4ade80]/20 hover:to-[#22c55e]/20 transition-all"
+                  >
+                    <SkipForward size={18} />
+                    Move to Next Cycle
+                  </button>
+                )}
               </div>
             )}
 

@@ -210,7 +210,9 @@ export const activate = mutation({
         status: i === 0 ? "current" : "upcoming",
       });
 
+      // Skip the recipient — they don't pay themselves in their own cycle
       for (const member of payingMembers) {
+        if (member._id === sortedMembers[i]._id) continue;
         await ctx.db.insert("member_payments", {
           cycleId,
           memberId: member._id,
