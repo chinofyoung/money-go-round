@@ -9,6 +9,8 @@
  */
 
 import type * as announcements from "../announcements.js";
+import type * as cronHandlers from "../cronHandlers.js";
+import type * as crons from "../crons.js";
 import type * as cycles from "../cycles.js";
 import type * as invitations from "../invitations.js";
 import type * as members from "../members.js";
@@ -26,6 +28,8 @@ import type {
 
 declare const fullApi: ApiFromModules<{
   announcements: typeof announcements;
+  cronHandlers: typeof cronHandlers;
+  crons: typeof crons;
   cycles: typeof cycles;
   invitations: typeof invitations;
   members: typeof members;
