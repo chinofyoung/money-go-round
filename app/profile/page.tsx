@@ -10,6 +10,7 @@ import { useQuery, useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
 import { ProfileSkeleton } from "@/components/ui/Skeleton";
+import { ImageLightbox } from "@/components/ui/ImageLightbox";
 import { Plus, Trash2, QrCode, Landmark, Wallet, Pencil } from "lucide-react";
 import { useRef, useState } from "react";
 import toast from "react-hot-toast";
@@ -60,6 +61,7 @@ export default function ProfilePage() {
   const removeAccount = useMutation(api.paymentAccounts.remove);
   const generateUploadUrl = useMutation(api.paymentAccounts.generateUploadUrl);
   const [editingId, setEditingId] = useState<Id<"payment_accounts"> | null>(null);
+  const [lightbox, setLightbox] = useState<{ src: string; alt: string } | null>(null);
 
   const organized = poolData?.organized ?? [];
   const member = (poolData?.member ?? []).filter(Boolean);
@@ -226,11 +228,19 @@ export default function ProfilePage() {
                 >
                   <div className="flex gap-3">
                     {acc.qrCodeUrl && (
-                      <img
-                        src={acc.qrCodeUrl}
-                        alt={`${acc.provider} QR`}
-                        className="w-20 h-20 rounded-xl border border-[#2a2a2a] object-cover flex-shrink-0"
-                      />
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setLightbox({ src: acc.qrCodeUrl!, alt: `${acc.provider} QR` })
+                        }
+                        className="flex-shrink-0"
+                      >
+                        <img
+                          src={acc.qrCodeUrl}
+                          alt={`${acc.provider} QR`}
+                          className="w-20 h-20 rounded-xl border border-[#2a2a2a] object-cover cursor-zoom-in transition-transform hover:scale-105"
+                        />
+                      </button>
                     )}
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center justify-between mb-1">
@@ -458,6 +468,13 @@ export default function ProfilePage() {
         </SignOutButton>
       </div>
 
+      {lightbox && (
+        <ImageLightbox
+          src={lightbox.src}
+          alt={lightbox.alt}
+          onClose={() => setLightbox(null)}
+        />
+      )}
     </ResponsiveLayout>
   );
 }

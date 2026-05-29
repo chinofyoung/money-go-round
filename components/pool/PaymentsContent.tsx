@@ -9,6 +9,7 @@ import { PaymentRow } from "@/components/pool/PaymentRow";
 import { GreenButton } from "@/components/ui/GreenButton";
 import { PaymentsPageSkeleton } from "@/components/ui/Skeleton";
 import { RecipientEarningsCard } from "@/components/pool/RecipientEarningsCard";
+import { ImageLightbox } from "@/components/ui/ImageLightbox";
 import { Id } from "@/convex/_generated/dataModel";
 import toast from "react-hot-toast";
 
@@ -21,6 +22,7 @@ export function PaymentsContent({ poolId }: PaymentsContentProps) {
   const fileRef = useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = useState(false);
   const [proofUrl, setProofUrl] = useState<string | null>(null);
+  const [lightbox, setLightbox] = useState<{ src: string; alt: string } | null>(null);
 
   const pool = useQuery(api.pools.getById, { poolId: poolId as Id<"pools"> });
   const members = useQuery(api.members.listByPool, { poolId: poolId as Id<"pools"> });
@@ -172,11 +174,19 @@ export function PaymentsContent({ poolId }: PaymentsContentProps) {
                     <p className="text-sm text-[#6b7280] font-mono">{acc.accountNumber}</p>
                   )}
                   {acc.qrCodeUrl && (
-                    <img
-                      src={acc.qrCodeUrl}
-                      alt={`${acc.provider} QR`}
-                      className="w-full max-w-[200px] mx-auto rounded-xl border border-[#2a2a2a]"
-                    />
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setLightbox({ src: acc.qrCodeUrl!, alt: `${acc.provider} QR` })
+                      }
+                      className="block w-full max-w-[200px] mx-auto"
+                    >
+                      <img
+                        src={acc.qrCodeUrl}
+                        alt={`${acc.provider} QR`}
+                        className="w-full rounded-xl border border-[#2a2a2a] cursor-zoom-in transition-transform hover:scale-[1.02]"
+                      />
+                    </button>
                   )}
                 </div>
               ))}
@@ -249,6 +259,13 @@ export function PaymentsContent({ poolId }: PaymentsContentProps) {
             </div>
           )}
         </>
+      )}
+      {lightbox && (
+        <ImageLightbox
+          src={lightbox.src}
+          alt={lightbox.alt}
+          onClose={() => setLightbox(null)}
+        />
       )}
     </div>
   );
