@@ -13,6 +13,7 @@ interface PaymentRowProps {
   confirmedByOrganizer: boolean;
   hasProof?: boolean;
   onConfirm?: () => void;
+  onMarkPaid?: () => void;
   onViewProof?: () => void;
   isOrganizer?: boolean;
 }
@@ -27,6 +28,7 @@ export function PaymentRow({
   confirmedByOrganizer,
   hasProof,
   onConfirm,
+  onMarkPaid,
   onViewProof,
   isOrganizer,
 }: PaymentRowProps) {
@@ -46,6 +48,16 @@ export function PaymentRow({
             className="text-xs text-[#4ade80] underline underline-offset-2"
           >
             Proof
+          </button>
+        )}
+
+        {(status === "pending" || status === "overdue") && isOrganizer && onMarkPaid && (
+          <button
+            onClick={onMarkPaid}
+            className="flex items-center gap-1 text-xs bg-[#4ade80]/10 text-[#4ade80] px-2 py-1 rounded-full"
+          >
+            <CheckCircle size={12} />
+            Mark paid
           </button>
         )}
 

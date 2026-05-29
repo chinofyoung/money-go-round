@@ -128,6 +128,7 @@ export default defineSchema({
       v.literal("payment_submitted"),
       v.literal("payment_confirmed"),
       v.literal("payment_rejected"),
+      v.literal("payment_marked_paid"),
       v.literal("payment_overdue"),
       v.literal("cycle_advanced"),
       v.literal("payout_upcoming"),

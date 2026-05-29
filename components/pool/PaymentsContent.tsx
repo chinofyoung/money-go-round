@@ -38,6 +38,7 @@ export function PaymentsContent({ poolId }: PaymentsContentProps) {
   const generateUploadUrl = useMutation(api.payments.generateUploadUrl);
   const markPaid = useMutation(api.payments.markPaid);
   const confirmPayment = useMutation(api.payments.confirmPayment);
+  const markPaidByVerifier = useMutation(api.payments.markPaidByVerifier);
 
   const isOrganizer = convexUser?._id === pool?.organizerId;
   const myMember = members?.find((m) => m.userId === convexUser?._id);
@@ -81,6 +82,26 @@ export function PaymentsContent({ poolId }: PaymentsContentProps) {
       toast.success("Payment confirmed!");
     } catch {
       toast.error("Failed to confirm.");
+    }
+  }
+
+  async function handleMarkPaid(
+    paymentId: Id<"member_payments">,
+    memberName: string
+  ) {
+    if (!convexUser) return;
+    if (
+      !window.confirm(
+        `Mark ${memberName} as paid? This will count their contribution for this cycle.`
+      )
+    ) {
+      return;
+    }
+    try {
+      await markPaidByVerifier({ paymentId, verifierUserId: convexUser._id });
+      toast.success(`${memberName} marked as paid.`);
+    } catch {
+      toast.error("Failed to mark as paid.");
     }
   }
 
@@ -218,6 +239,9 @@ export function PaymentsContent({ poolId }: PaymentsContentProps) {
                       hasProof={!!payment.proofStorageId}
                       isOrganizer={isVerifier}
                       onConfirm={() => handleConfirm(payment._id)}
+                      onMarkPaid={() =>
+                        handleMarkPaid(payment._id, member.displayName ?? member.email)
+                      }
                     />
                   );
                 })}

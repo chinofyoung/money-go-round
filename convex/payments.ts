@@ -1,5 +1,102 @@
 import { v } from "convex/values";
-import { mutation, query } from "./_generated/server";
+import { mutation, query, MutationCtx } from "./_generated/server";
+import { Id } from "./_generated/dataModel";
+
+async function advanceCycleIfComplete(
+  ctx: MutationCtx,
+  paymentId: Id<"member_payments">
+) {
+  const payment = await ctx.db.get(paymentId);
+  if (!payment) return;
+
+  const cycle = await ctx.db.get(payment.cycleId);
+  if (!cycle) return;
+
+  const pool = await ctx.db.get(cycle.poolId);
+  if (!pool) return;
+
+  const allPayments = await ctx.db
+    .query("member_payments")
+    .withIndex("by_cycle", (q) => q.eq("cycleId", payment.cycleId))
+    .collect();
+
+  // Exclude the recipient's own payment (they don't pay themselves)
+  const recipientMemberId = cycle.recipientMemberId;
+  const relevantPayments = allPayments.filter(
+    (p) => p.memberId !== recipientMemberId
+  );
+
+  const allConfirmed = relevantPayments.every((p) => p.confirmedByOrganizer);
+  if (!allConfirmed) return;
+
+  await ctx.db.patch(cycle._id, { status: "completed" });
+
+  // Find and activate next cycle
+  const nextCycle = await ctx.db
+    .query("payment_cycles")
+    .withIndex("by_pool", (q) => q.eq("poolId", cycle.poolId))
+    .filter((q) => q.eq(q.field("cycleNumber"), cycle.cycleNumber + 1))
+    .unique();
+
+  if (nextCycle) {
+    await ctx.db.patch(nextCycle._id, { status: "current" });
+    await ctx.db.patch(cycle.poolId, { currentCycle: cycle.cycleNumber + 1 });
+
+    const activeMembers = await ctx.db
+      .query("pool_members")
+      .withIndex("by_pool", (q) => q.eq("poolId", cycle.poolId))
+      .filter((q) => q.eq(q.field("status"), "active"))
+      .collect();
+
+    const advanceMessage = `Cycle ${cycle.cycleNumber} of "${pool.name}" is complete. Cycle ${nextCycle.cycleNumber} has started.`;
+    for (const m of activeMembers) {
+      if (m.userId) {
+        await ctx.db.insert("notifications", {
+          userId: m.userId,
+          type: "cycle_advanced",
+          message: advanceMessage,
+          poolId: cycle.poolId,
+          read: false,
+          createdAt: Date.now(),
+        });
+      }
+    }
+
+    const recipient = await ctx.db.get(nextCycle.recipientMemberId);
+    if (recipient?.userId) {
+      await ctx.db.insert("notifications", {
+        userId: recipient.userId,
+        type: "payout_upcoming",
+        message: `You are the recipient for Cycle ${nextCycle.cycleNumber} of "${pool.name}". Payments will be sent to you this cycle.`,
+        poolId: cycle.poolId,
+        read: false,
+        createdAt: Date.now(),
+      });
+    }
+  } else {
+    // All cycles done
+    await ctx.db.patch(cycle.poolId, { status: "completed" });
+
+    const activeMembers = await ctx.db
+      .query("pool_members")
+      .withIndex("by_pool", (q) => q.eq("poolId", cycle.poolId))
+      .filter((q) => q.eq(q.field("status"), "active"))
+      .collect();
+
+    for (const m of activeMembers) {
+      if (m.userId) {
+        await ctx.db.insert("notifications", {
+          userId: m.userId,
+          type: "payout_received",
+          message: `"${pool.name}" has been completed! All cycles are done.`,
+          poolId: cycle.poolId,
+          read: false,
+          createdAt: Date.now(),
+        });
+      }
+    }
+  }
+}
 
 export const listByCycle = query({
   args: { cycleId: v.id("payment_cycles") },
@@ -79,8 +176,6 @@ export const confirmPayment = mutation({
     // Notify the paying member
     const member = await ctx.db.get(payment.memberId);
     if (member?.userId) {
-      const cycle = await ctx.db.get(payment.cycleId);
-      const pool = cycle ? await ctx.db.get(cycle.poolId) : null;
       await ctx.db.insert("notifications", {
         userId: member.userId,
         type: "payment_confirmed",
@@ -91,102 +186,62 @@ export const confirmPayment = mutation({
       });
     }
 
-    // Check if all payments in this cycle are confirmed → advance cycle
-    const cycleForCheck = await ctx.db.get(payment.cycleId);
-    const allPayments = await ctx.db
-      .query("member_payments")
-      .withIndex("by_cycle", (q) => q.eq("cycleId", payment.cycleId))
-      .collect();
+    await advanceCycleIfComplete(ctx, args.paymentId);
+  },
+});
 
-    // Exclude the recipient's own payment (they don't pay themselves)
-    const recipientMemberId = cycleForCheck?.recipientMemberId;
-    const relevantPayments = allPayments.filter(
-      (p) => p.memberId !== recipientMemberId
-    );
+export const markPaidByVerifier = mutation({
+  args: {
+    paymentId: v.id("member_payments"),
+    verifierUserId: v.id("users"),
+  },
+  handler: async (ctx, args) => {
+    const payment = await ctx.db.get(args.paymentId);
+    if (!payment) throw new Error("Payment not found");
 
-    const allConfirmed = relevantPayments.every((p) =>
-      p._id === args.paymentId ? true : p.confirmedByOrganizer
-    );
-
-    if (allConfirmed) {
-      const cycle = await ctx.db.get(payment.cycleId);
-      if (cycle) {
-        await ctx.db.patch(cycle._id, { status: "completed" });
-
-        // Find and activate next cycle
-        const nextCycle = await ctx.db
-          .query("payment_cycles")
-          .withIndex("by_pool", (q) => q.eq("poolId", cycle.poolId))
-          .filter((q) => q.eq(q.field("cycleNumber"), cycle.cycleNumber + 1))
-          .unique();
-
-        if (nextCycle) {
-          await ctx.db.patch(nextCycle._id, { status: "current" });
-          await ctx.db.patch(cycle.poolId, { currentCycle: cycle.cycleNumber + 1 });
-
-          // Notify all active members that the cycle advanced
-          if (pool) {
-            const activeMembers = await ctx.db
-              .query("pool_members")
-              .withIndex("by_pool", (q) => q.eq("poolId", cycle.poolId))
-              .filter((q) => q.eq(q.field("status"), "active"))
-              .collect();
-
-            const advanceMessage = `Cycle ${cycle.cycleNumber} of "${pool.name}" is complete. Cycle ${nextCycle.cycleNumber} has started.`;
-            for (const m of activeMembers) {
-              if (m.userId) {
-                await ctx.db.insert("notifications", {
-                  userId: m.userId,
-                  type: "cycle_advanced",
-                  message: advanceMessage,
-                  poolId: cycle.poolId,
-                  read: false,
-                  createdAt: Date.now(),
-                });
-              }
-            }
-
-            // Notify the next cycle's recipient
-            const recipient = await ctx.db.get(nextCycle.recipientMemberId);
-            if (recipient?.userId) {
-              await ctx.db.insert("notifications", {
-                userId: recipient.userId,
-                type: "payout_upcoming",
-                message: `You are the recipient for Cycle ${nextCycle.cycleNumber} of "${pool.name}". Payments will be sent to you this cycle.`,
-                poolId: cycle.poolId,
-                read: false,
-                createdAt: Date.now(),
-              });
-            }
-          }
-        } else {
-          // All cycles done
-          await ctx.db.patch(cycle.poolId, { status: "completed" });
-
-          // Notify all active members that the pool is complete
-          if (pool) {
-            const activeMembers = await ctx.db
-              .query("pool_members")
-              .withIndex("by_pool", (q) => q.eq("poolId", cycle.poolId))
-              .filter((q) => q.eq(q.field("status"), "active"))
-              .collect();
-
-            for (const m of activeMembers) {
-              if (m.userId) {
-                await ctx.db.insert("notifications", {
-                  userId: m.userId,
-                  type: "payout_received",
-                  message: `"${pool.name}" has been completed! All cycles are done.`,
-                  poolId: cycle.poolId,
-                  read: false,
-                  createdAt: Date.now(),
-                });
-              }
-            }
-          }
-        }
-      }
+    // Status guard — only pending/overdue payments are eligible for manual mark.
+    // A "paid" payment should go through confirmPayment instead.
+    if (payment.status !== "pending" && payment.status !== "overdue") {
+      throw new Error("Payment is already marked paid");
     }
+
+    const cycle = await ctx.db.get(payment.cycleId);
+    const pool = cycle ? await ctx.db.get(cycle.poolId) : null;
+    if (!pool || !cycle) throw new Error("Pool or cycle not found");
+
+    // Auth check identical to confirmPayment
+    if (pool.paymentVerifier === "recipient") {
+      const recipientMember = await ctx.db.get(cycle.recipientMemberId);
+      if (
+        recipientMember?.userId !== args.verifierUserId &&
+        pool.organizerId !== args.verifierUserId
+      ) {
+        throw new Error("Not authorized to mark this payment paid");
+      }
+    } else if (pool.organizerId !== args.verifierUserId) {
+      throw new Error("Not authorized to mark this payment paid");
+    }
+
+    await ctx.db.patch(args.paymentId, {
+      status: "paid",
+      paidAt: Date.now(),
+      confirmedByOrganizer: true,
+    });
+
+    // Notify the paying member
+    const member = await ctx.db.get(payment.memberId);
+    if (member?.userId) {
+      await ctx.db.insert("notifications", {
+        userId: member.userId,
+        type: "payment_marked_paid",
+        message: `The recipient logged your payment for "${pool.name}" as received.`,
+        poolId: cycle.poolId,
+        read: false,
+        createdAt: Date.now(),
+      });
+    }
+
+    await advanceCycleIfComplete(ctx, args.paymentId);
   },
 });
 
@@ -213,6 +268,7 @@ export const rejectPayment = mutation({
       }
     }
 
+    const hadProof = !!payment.proofStorageId;
     // Reset to pending and clear proof
     await ctx.db.patch(args.paymentId, {
       status: "pending",
@@ -224,12 +280,14 @@ export const rejectPayment = mutation({
     // Notify the member
     const member = await ctx.db.get(payment.memberId);
     if (member?.userId) {
-      const cycle = await ctx.db.get(payment.cycleId);
-      const pool = cycle ? await ctx.db.get(cycle.poolId) : null;
+      const poolName = pool?.name ?? "Pool";
+      const message = hadProof
+        ? `Your payment for "${poolName}" was rejected. Please resubmit.`
+        : `The recipient removed the paid mark on your payment for "${poolName}".`;
       await ctx.db.insert("notifications", {
         userId: member.userId,
         type: "payment_rejected",
-        message: `Your payment for "${pool?.name ?? "Pool"}" was rejected. Please resubmit.`,
+        message,
         poolId: cycle?.poolId,
         read: false,
         createdAt: Date.now(),
