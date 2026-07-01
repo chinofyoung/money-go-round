@@ -156,7 +156,7 @@ export function PaymentsContent({ poolId }: PaymentsContentProps) {
           )}
 
           {/* Payment accounts — show to payers */}
-          {!isRecipient && myPayment && myPayment.status === "pending" && verifierAccounts && verifierAccounts.length > 0 && (
+          {!isRecipient && myPayment && (myPayment.status === "pending" || myPayment.status === "overdue") && verifierAccounts && verifierAccounts.length > 0 && (
             <div className="bg-[#141414] border border-[#2a2a2a] rounded-2xl p-4 space-y-3">
               <p className="text-xs text-[#6b7280] font-medium uppercase tracking-wider">
                 Send payment to
@@ -194,7 +194,7 @@ export function PaymentsContent({ poolId }: PaymentsContentProps) {
           )}
 
           {/* My payment action — only show if not the recipient */}
-          {!isRecipient && myPayment && myPayment.status === "pending" && (
+          {!isRecipient && myPayment && (myPayment.status === "pending" || myPayment.status === "overdue") && (
             <div className="bg-[#141414] border border-[#2a2a2a] rounded-2xl p-4 space-y-3">
               <p className="text-sm font-semibold text-white">My contribution</p>
               <p className="text-xs text-[#6b7280]">
